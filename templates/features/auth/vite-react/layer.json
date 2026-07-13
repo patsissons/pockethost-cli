@@ -1,0 +1,6 @@
+{
+  "name": "auth-vite-react",
+  "conditions": {
+    "src/pages/RegisterPage.tsx": "auth.password"
+  }
+}

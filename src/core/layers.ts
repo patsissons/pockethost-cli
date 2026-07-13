@@ -18,6 +18,25 @@ export interface LayerManifest {
   mounts?: Record<string, string>
   /** App-relative target paths this layer is allowed to overwrite. */
   overrides?: string[]
+  /**
+   * Final target path → dot-path into TemplateData (optionally `!`-negated).
+   * The file is only scaffolded when the referenced value is truthy, e.g.
+   * `"src/pages/RegisterPage.tsx": "auth.password"`.
+   */
+  conditions?: Record<string, string>
+}
+
+export function evaluateCondition(expression: string, data: object): boolean {
+  const negated = expression.startsWith('!')
+  const dotPath = negated ? expression.slice(1) : expression
+  const value = dotPath
+    .split('.')
+    .reduce<unknown>(
+      (current, key) => (current as Record<string, unknown> | undefined)?.[key],
+      data,
+    )
+  const truthy = Array.isArray(value) ? value.length > 0 : Boolean(value)
+  return negated ? !truthy : truthy
 }
 
 export interface Layer {

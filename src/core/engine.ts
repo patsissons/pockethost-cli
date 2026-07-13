@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { collectLayerFiles, loadLayer } from './layers.js'
+import { collectLayerFiles, evaluateCondition, loadLayer } from './layers.js'
 import { mergePackageJson, type MergeInput } from './merge.js'
 import { finalTargetPath, isBinaryPath, renderTemplate } from './render.js'
 import { commitFiles, initRepoWithRootCommit } from './git.js'
@@ -68,6 +68,10 @@ export async function executePlan(
     const overrides = new Set(layer.manifest.overrides ?? [])
     for (const file of await collectLayerFiles(layer)) {
       const { target, isTemplate } = finalTargetPath(file.targetRel)
+
+      const condition = layer.manifest.conditions?.[target]
+      if (condition && !evaluateCondition(condition, plan.templateData))
+        continue
 
       const owner = ownerByTarget.get(target)
       if (owner !== undefined && !overrides.has(target)) {
