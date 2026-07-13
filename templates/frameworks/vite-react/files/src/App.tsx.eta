@@ -1,0 +1,24 @@
+import { Route, Routes } from 'react-router'
+import { Layout } from '@/components/Layout'
+import { HomePage } from '@/pages/HomePage'
+<% if (it.auth.enabled) { %>import { AuthProvider } from '@/lib/auth'
+import { LoginPage } from '@/pages/LoginPage'
+<% if (it.auth.password) { %>import { RegisterPage } from '@/pages/RegisterPage'
+<% } %><% } %>
+export default function App() {
+  return (
+    <% if (it.auth.enabled) { %><AuthProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<LoginPage />} />
+<% if (it.auth.password) { %>          <Route path="register" element={<RegisterPage />} />
+<% } %>        </Route>
+      </Routes>
+    </AuthProvider><% } else { %><Routes>
+      <Route element={<Layout />}>
+        <Route index element={<HomePage />} />
+      </Route>
+    </Routes><% } %>
+  )
+}

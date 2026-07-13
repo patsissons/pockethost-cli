@@ -1,0 +1,3 @@
+# PocketBase URL the frontend talks to during development.
+# In production the app is served by PocketBase itself, so it uses the page origin.
+VITE_POCKETBASE_URL=<%= it.pocketbaseUrl %>
