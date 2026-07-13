@@ -103,6 +103,21 @@ export async function executePlan(
     }
   }
 
+  for (const generated of plan.generatedFiles) {
+    const owner = ownerByTarget.get(generated.target)
+    if (owner !== undefined) {
+      throw new Error(
+        `Generated file ${generated.target} collides with layer "${owner}".`,
+      )
+    }
+    ownerByTarget.set(generated.target, 'generated')
+    pending.set(generated.target, {
+      target: generated.target,
+      group: generated.group,
+      content: generated.content,
+    })
+  }
+
   const packageJson = mergePackageJson({ name: plan.answers.name, fragments })
   pending.set('package.json', {
     target: 'package.json',

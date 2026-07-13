@@ -1,5 +1,11 @@
 import path from 'node:path'
 import {
+  AUTH_MIGRATION_FILENAME,
+  generateAuthMigration,
+  generateOAuthHook,
+  OAUTH_HOOK_FILENAME,
+} from '../auth/migrations.js'
+import {
   hasAuth,
   type OAuthProvider,
   type WizardAnswers,
@@ -75,9 +81,17 @@ export interface PlannedLayer {
   dir: string
 }
 
+export interface GeneratedFile {
+  target: string
+  group: CommitGroupKey
+  content: string
+}
+
 export interface ScaffoldPlan {
   answers: WizardAnswers
   layers: PlannedLayer[]
+  /** Files built by code (auth migrations/hooks) rather than templates. */
+  generatedFiles: GeneratedFile[]
   templateData: TemplateData
   commitGroups: CommitGroup[]
 }
@@ -161,10 +175,29 @@ export function buildPlan(
     })
   }
 
+  const templateData = buildTemplateData(answers)
+
+  const generatedFiles: GeneratedFile[] = []
+  if (templateData.auth.enabled) {
+    generatedFiles.push({
+      target: AUTH_MIGRATION_FILENAME,
+      group: 'backend',
+      content: generateAuthMigration(templateData.auth),
+    })
+  }
+  if (templateData.auth.oauth.length > 0) {
+    generatedFiles.push({
+      target: OAUTH_HOOK_FILENAME,
+      group: 'backend',
+      content: generateOAuthHook(templateData.auth.oauth),
+    })
+  }
+
   return {
     answers,
     layers,
-    templateData: buildTemplateData(answers),
+    generatedFiles,
+    templateData,
     commitGroups: COMMIT_GROUPS,
   }
 }

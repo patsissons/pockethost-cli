@@ -9,10 +9,29 @@ import {
 import type { AuthRecord } from 'pocketbase'
 import { pb } from '@/lib/pocketbase'
 
-interface AuthContextValue {
+<% if (it.auth.mfa) { %>/** Thrown when PocketBase demands a second factor to finish logging in. */
+export class MfaRequiredError extends Error {
+  mfaId: string
+
+  constructor(mfaId: string) {
+    super('Multi-factor authentication required')
+    this.mfaId = mfaId
+  }
+}
+
+function mfaIdFrom(error: unknown): string | undefined {
+  if (error && typeof error === 'object' && 'response' in error) {
+    return (error as { response?: { mfaId?: string } }).response?.mfaId
+  }
+  return undefined
+}
+
+<% } %>interface AuthContextValue {
   user: AuthRecord | null
 <% if (it.auth.password) { %>  login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
+<% } %><% if (it.auth.otp) { %>  requestOtp: (email: string) => Promise<string>
+  loginWithOtp: (otpId: string, code: string<% if (it.auth.mfa) { %>, mfaId?: string<% } %>) => Promise<void>
 <% } %><% if (it.auth.oauth.length > 0) { %>  loginWithOAuth: (provider: string) => Promise<void>
 <% } %>  logout: () => void
 }
@@ -29,13 +48,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
 <% if (it.auth.password) { %>  const login = useCallback(async (email: string, password: string) => {
+<% if (it.auth.mfa) { %>    try {
+      await pb.collection('users').authWithPassword(email, password)
+    } catch (error) {
+      const mfaId = mfaIdFrom(error)
+      if (mfaId) throw new MfaRequiredError(mfaId)
+      throw error
+    }
+<% } else { %>    await pb.collection('users').authWithPassword(email, password)
+<% } %>  }, [])
+
+  const register = useCallback(async (email: string, password: string) => {
+    await pb
+      .collection('users')
+      .create({ email, password, passwordConfirm: password })
     await pb.collection('users').authWithPassword(email, password)
   }, [])
 
-  const register = useCallback(async (email: string, password: string) => {
-    await pb.collection('users').create({ email, password, passwordConfirm: password })
-    await pb.collection('users').authWithPassword(email, password)
+<% } %><% if (it.auth.otp) { %>  const requestOtp = useCallback(async (email: string) => {
+    const result = await pb.collection('users').requestOTP(email)
+    return result.otpId
   }, [])
+
+  const loginWithOtp = useCallback(
+    async (otpId: string, code: string<% if (it.auth.mfa) { %>, mfaId?: string<% } %>) => {
+      await pb
+        .collection('users')
+        .authWithOTP(otpId, code<% if (it.auth.mfa) { %>, mfaId ? { mfaId } : undefined<% } %>)
+    },
+    [],
+  )
 
 <% } %><% if (it.auth.oauth.length > 0) { %>  const loginWithOAuth = useCallback(async (provider: string) => {
     await pb.collection('users').authWithOAuth2({ provider })
@@ -46,7 +88,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, <% if (it.auth.password) { %>login, register, <% } %><% if (it.auth.oauth.length > 0) { %>loginWithOAuth, <% } %>logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+<% if (it.auth.password) { %>        login,
+        register,
+<% } %><% if (it.auth.otp) { %>        requestOtp,
+        loginWithOtp,
+<% } %><% if (it.auth.oauth.length > 0) { %>        loginWithOAuth,
+<% } %>        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

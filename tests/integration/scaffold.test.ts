@@ -151,6 +151,46 @@ describe('scaffold integration (vite-react)', () => {
     }
   })
 
+  it('generates auth migration and oauth hook for the full auth matrix', async () => {
+    const { targetDir, result } = await scaffold({
+      authFactors: ['password', 'otp'],
+      oauthProviders: ['google', 'github'],
+      mfa: true,
+    })
+    const targets = result.files.map((f) => f.target)
+    expect(targets).toContain('pb_migrations/1700000001_configure_auth.js')
+    expect(targets).toContain('pb_hooks/oauth.pb.js')
+    expect(targets).toContain('pb_hooks/admin.pb.js')
+
+    for (const file of [
+      'pb_migrations/1700000001_configure_auth.js',
+      'pb_hooks/oauth.pb.js',
+      'pb_hooks/admin.pb.js',
+    ]) {
+      await expect(
+        execa('node', ['--check', path.join(targetDir, file)]),
+      ).resolves.toBeDefined()
+    }
+
+    const env = await readFile(path.join(targetDir, '.env.example'), 'utf8')
+    expect(env).toContain('GOOGLE_CLIENT_ID=')
+    expect(env).toContain('GITHUB_CLIENT_SECRET=')
+
+    const login = await readFile(
+      path.join(targetDir, 'src/pages/LoginPage.tsx'),
+      'utf8',
+    )
+    expect(login).toContain('one-time code')
+    expect(login).toContain('MfaRequiredError')
+  })
+
+  it('omits the auth migration when no auth is selected', async () => {
+    const { result } = await scaffold({ authFactors: [], oauthProviders: [] })
+    const targets = result.files.map((f) => f.target)
+    expect(targets).not.toContain('pb_migrations/1700000001_configure_auth.js')
+    expect(targets).not.toContain('pb_hooks/oauth.pb.js')
+  })
+
   it('omits auth files when no auth is selected', async () => {
     const { result } = await scaffold({ authFactors: [], oauthProviders: [] })
     const targets = result.files.map((f) => f.target)

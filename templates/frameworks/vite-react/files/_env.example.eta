@@ -1,3 +1,9 @@
 # PocketBase URL the frontend talks to during development.
 # In production the app is served by PocketBase itself, so it uses the page origin.
 VITE_POCKETBASE_URL=<%= it.pocketbaseUrl %>
+<% if (it.auth.oauth.length > 0) { %>
+# OAuth credentials — only needed for a LOCAL `pocketbase serve`. On PocketHost,
+# set these in the dashboard (instance → Secrets) instead; never commit them.
+<% for (const provider of it.auth.oauth) { %><%= provider.toUpperCase() %>_CLIENT_ID=
+<%= provider.toUpperCase() %>_CLIENT_SECRET=
+<% } %><% } %>
