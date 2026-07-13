@@ -22,7 +22,10 @@ Key architecture decisions:
 - **Single package, embedded layered templates** under `templates/` (no delegation to create-vite/create-next-app). Layers compose in order: `base` → `frameworks/<fw>` → `design/<ds>/<fw>` → `features/auth/*`. Each layer has a `layer.json` manifest (package.json fragment, file mount points, conditions).
 - `src/core/plan.ts` is a PURE function `buildPlan(answers) → ScaffoldPlan`; all effects live in `src/core/engine.ts` and `src/steps/*`. Keep it that way — the full wizard matrix is unit-tested through `buildPlan`.
 - All phio subprocess interaction goes through `src/phio/client.ts` (the stub seam for tests). Never call phio directly elsewhere.
-- Template files that npm would mangle in published packages are stored with `_` prefixes (`_gitignore`) and renamed by `src/core/render.ts`.
+- Template files that npm would mangle in published packages are stored with `_` prefixes (`_gitignore`) and renamed by `src/core/render.ts`; directories use `mounts` in layer.json (`github/` → `.github/`). `tests/integration/pack.test.ts` guards this.
+- **UI contract**: every design layer provides `components/ui/{button,input,label,card}` (path per framework) with the shadcn prop surface (incl. `asChild`); framework/auth templates only import from that contract, which is why 3 designs × 4 frameworks doesn't explode.
+- **Generated files** (auth migration, oauth bootstrap hook) are built by `src/auth/migrations.ts` and flow through `plan.generatedFiles`, not templates.
+- Rendered files are prettier-formatted in-memory by the engine using the app's own `.prettierrc` (plugins stripped; svelte handled via the CLI-bundled plugin) — templates cannot guarantee format-clean output across interpolations.
 - Every wizard prompt has a 1:1 commander flag; `--yes`, `--no-interactive`, `--skip-phio`, `--no-install`, `--no-validate`, `--no-deploy` keep the CLI scriptable and testable offline.
 
 ## PocketHost facts that constrain design
