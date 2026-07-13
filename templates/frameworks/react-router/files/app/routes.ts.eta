@@ -1,0 +1,7 @@
+import { type RouteConfig, index<% if (it.auth.enabled) { %>, route<% } %> } from '@react-router/dev/routes'
+
+export default [
+  index('routes/home.tsx'),
+<% if (it.auth.enabled) { %>  route('login', 'routes/login.tsx'),
+<% if (it.auth.password) { %>  route('register', 'routes/register.tsx'),
+<% } %><% } %>] satisfies RouteConfig

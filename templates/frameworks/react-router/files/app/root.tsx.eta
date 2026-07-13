@@ -1,0 +1,86 @@
+import type { ReactNode } from 'react'
+import { Link, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
+<% if (it.auth.enabled) { %>import { Button } from '~/components/ui/button'
+import { AuthProvider, useAuth } from '~/lib/auth'
+<% } %>import './app.css'
+
+export function Layout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title><%= it.appName %></title>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  )
+}
+
+function Shell({ children }: { children: ReactNode }) {
+<% if (it.auth.enabled) { %>  const { user, logout } = useAuth()
+
+<% } %>  return (
+    <div className="bg-background text-foreground flex min-h-screen flex-col">
+      <header className="border-b">
+        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
+          <Link to="/" className="font-semibold">
+            <%= it.appName %>
+          </Link>
+<% if (it.auth.enabled) { %>          <nav className="flex items-center gap-2">
+            {user ? (
+              <>
+                <span className="text-muted-foreground text-sm">
+                  {user.email}
+                </span>
+                <Button variant="outline" size="sm" onClick={logout}>
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <Button asChild size="sm">
+                <Link to="/login">Log in</Link>
+              </Button>
+            )}
+          </nav>
+<% } %>        </div>
+      </header>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+        {children}
+      </main>
+      <footer className="text-muted-foreground border-t py-4 text-center text-sm">
+        Powered by PocketHost
+      </footer>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+<% if (it.auth.enabled) { %>    <AuthProvider>
+      <Shell>
+        <Outlet />
+      </Shell>
+    </AuthProvider>
+<% } else { %>    <Shell>
+      <Outlet />
+    </Shell>
+<% } %>  )
+}
+
+export function ErrorBoundary() {
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <h1 className="text-2xl font-bold">Something went wrong</h1>
+      <p className="text-muted-foreground mt-2">
+        Check the browser console for details.
+      </p>
+    </main>
+  )
+}

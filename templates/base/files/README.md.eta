@@ -63,7 +63,7 @@ The admin account is your pockethost.io login (PocketHost Admin Sync provisions 
 | `<%= it.pm.run %> build`               | Production build into `pb_public/`                    |
 | `<%= it.pm.run %> test`                | Unit tests (vitest)                                   |
 | `<%= it.pm.run %> test:e2e`            | Playwright e2e tests                                  |
-| `<%= it.pm.run %> typegen`             | Regenerate `src/lib/pocketbase-types.ts` from schema  |
+| `<%= it.pm.run %> typegen`             | Regenerate the PocketBase record types from schema    |
 | `<%= it.pm.run %> validate:quick`      | format check + typecheck + lint + unit tests          |
 | `<%= it.pm.run %> validate`            | `validate:quick` + e2e tests                          |
 | `<%= it.pm.run %> format-and-validate` | Prettier write, then `validate` — run before commits  |
