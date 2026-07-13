@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { Eta } from 'eta'
+import prettier from 'prettier'
 
 /**
  * npm mangles certain dotfiles inside published packages (`.gitignore`
@@ -50,4 +51,20 @@ export function finalTargetPath(targetRel: string): {
 
 export function renderTemplate(content: string, data: object): string {
   return eta.renderString(content, data)
+}
+
+/**
+ * Formats rendered content with the scaffolded app's own prettier config so
+ * every scaffold is born `format:check`-clean. Template interpolation (app
+ * names of varying length, conditional blocks) makes it impossible for the
+ * stored templates to guarantee this themselves.
+ */
+export async function formatContent(
+  target: string,
+  content: string,
+  prettierConfig: Record<string, unknown>,
+): Promise<string> {
+  const { inferredParser } = await prettier.getFileInfo(target)
+  if (!inferredParser) return content
+  return prettier.format(content, { ...prettierConfig, filepath: target })
 }

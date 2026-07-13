@@ -2,6 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { execa } from 'execa'
+import prettier from 'prettier'
 import { afterAll, describe, expect, it } from 'vitest'
 import { executePlan } from '../../src/core/engine.js'
 import { buildPlan } from '../../src/core/plan.js'
@@ -118,6 +119,24 @@ describe('scaffold integration (vite-react)', () => {
       env: gitEnv,
     })
     expect(status).toBe('')
+  })
+
+  it('scaffolded output is prettier-clean under the app prettier config', async () => {
+    const { targetDir, result } = await scaffold()
+    const config = JSON.parse(
+      await readFile(path.join(targetDir, '.prettierrc'), 'utf8'),
+    ) as Record<string, unknown>
+
+    for (const { target } of result.files) {
+      const { inferredParser } = await prettier.getFileInfo(target)
+      if (!inferredParser) continue
+      const content = await readFile(path.join(targetDir, target), 'utf8')
+      const clean = await prettier.check(content, {
+        ...config,
+        filepath: target,
+      })
+      expect.soft(clean, `${target} is not prettier-clean`).toBe(true)
+    }
   })
 
   it('generated migrations and hooks are valid javascript', async () => {

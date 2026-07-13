@@ -23,6 +23,7 @@ export interface MergeInput {
 
 const SCRIPT_ORDER = [
   'dev',
+  'dev:e2e',
   'build',
   'preview',
   'start',

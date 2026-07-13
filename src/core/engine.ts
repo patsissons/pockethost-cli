@@ -2,7 +2,12 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { collectLayerFiles, evaluateCondition, loadLayer } from './layers.js'
 import { mergePackageJson, type MergeInput } from './merge.js'
-import { finalTargetPath, isBinaryPath, renderTemplate } from './render.js'
+import {
+  finalTargetPath,
+  formatContent,
+  isBinaryPath,
+  renderTemplate,
+} from './render.js'
 import { commitFiles, initRepoWithRootCommit } from './git.js'
 import {
   COMMIT_GROUPS,
@@ -105,10 +110,20 @@ export async function executePlan(
     content: `${JSON.stringify(packageJson, null, 2)}\n`,
   })
 
+  const prettierRc = pending.get('.prettierrc')
+  const prettierConfig =
+    typeof prettierRc?.content === 'string'
+      ? (JSON.parse(prettierRc.content) as Record<string, unknown>)
+      : {}
+
   for (const file of pending.values()) {
     const absolute = path.join(targetDir, file.target)
     await mkdir(path.dirname(absolute), { recursive: true })
-    await writeFile(absolute, file.content)
+    const content =
+      typeof file.content === 'string'
+        ? await formatContent(file.target, file.content, prettierConfig)
+        : file.content
+    await writeFile(absolute, content)
   }
 
   const files = [...pending.values()]

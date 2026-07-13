@@ -11,7 +11,7 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: '<%= it.pm.run %> dev -- --port 5173 --strictPort',
+    command: '<%= it.pm.run %> dev:e2e',
     url: 'http://127.0.0.1:5173',
     reuseExistingServer: !process.env.CI,
   },
