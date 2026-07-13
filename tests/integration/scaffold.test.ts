@@ -287,3 +287,87 @@ describe('scaffold integration (sveltekit)', () => {
     expect(targets).toContain('src/lib/auth.svelte.ts')
   })
 })
+
+describe('scaffold integration (react-router)', () => {
+  it('produces the expected file tree with password auth', async () => {
+    const { targetDir, result } = await scaffold({ framework: 'react-router' })
+
+    expect(result.warnings).toEqual([])
+    expect(result.files.map((f) => f.target)).toMatchSnapshot()
+
+    const rrConfig = await readFile(
+      path.join(targetDir, 'react-router.config.ts'),
+      'utf8',
+    )
+    expect(rrConfig).toContain('ssr: false')
+
+    const root = await readFile(path.join(targetDir, 'app/root.tsx'), 'utf8')
+    expect(root).toContain('<title>demo-app</title>')
+    expect(root).toContain('AuthProvider')
+
+    const routes = await readFile(path.join(targetDir, 'app/routes.ts'), 'utf8')
+    expect(routes).toContain("route('login', 'routes/login.tsx')")
+    expect(routes).toContain("route('register', 'routes/register.tsx')")
+
+    const prettierIgnore = await readFile(
+      path.join(targetDir, '.prettierignore'),
+      'utf8',
+    )
+    expect(prettierIgnore).toContain('.react-router/')
+
+    const pkg = JSON.parse(
+      await readFile(path.join(targetDir, 'package.json'), 'utf8'),
+    ) as { scripts: Record<string, string> }
+    expect(pkg.scripts.build).toContain('scripts/pb-public.mjs')
+    expect(pkg.scripts.typegen).toContain('app/lib/pocketbase-types.ts')
+  })
+
+  it('react-router output is prettier-clean under the app config', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'react-router',
+      authFactors: ['password', 'otp'],
+      oauthProviders: ['google'],
+      mfa: true,
+    })
+    const config = JSON.parse(
+      await readFile(path.join(targetDir, '.prettierrc'), 'utf8'),
+    ) as Record<string, unknown>
+
+    for (const { target } of result.files) {
+      const { inferredParser } = await prettier.getFileInfo(target)
+      if (!inferredParser) continue
+      const content = await readFile(path.join(targetDir, target), 'utf8')
+      const clean = await prettier.check(content, {
+        ...config,
+        filepath: target,
+      })
+      expect.soft(clean, `${target} is not prettier-clean`).toBe(true)
+    }
+  })
+
+  it('omits the register route for oauth-only auth', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'react-router',
+      authFactors: [],
+      oauthProviders: ['google'],
+    })
+    const targets = result.files.map((f) => f.target)
+    expect(targets).toContain('app/routes/login.tsx')
+    expect(targets).not.toContain('app/routes/register.tsx')
+
+    const routes = await readFile(path.join(targetDir, 'app/routes.ts'), 'utf8')
+    expect(routes).not.toContain('register')
+  })
+
+  it('omits auth entirely when no auth is selected', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'react-router',
+      authFactors: [],
+      oauthProviders: [],
+    })
+    const targets = result.files.map((f) => f.target)
+    expect(targets).not.toContain('app/lib/auth.tsx')
+    const root = await readFile(path.join(targetDir, 'app/root.tsx'), 'utf8')
+    expect(root).not.toContain('AuthProvider')
+  })
+})

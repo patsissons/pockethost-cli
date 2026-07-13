@@ -1,5 +1,49 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`scaffold integration (react-router) > produces the expected file tree with password auth 1`] = `
+[
+  ".env.example",
+  ".gitignore",
+  ".prettierignore",
+  ".prettierrc",
+  "AGENTS.md",
+  "app/app.css",
+  "app/components/ui/button.tsx",
+  "app/components/ui/card.tsx",
+  "app/components/ui/input.tsx",
+  "app/components/ui/label.tsx",
+  "app/lib/auth.tsx",
+  "app/lib/logger.test.ts",
+  "app/lib/logger.ts",
+  "app/lib/pocketbase-types.ts",
+  "app/lib/pocketbase.ts",
+  "app/lib/utils.ts",
+  "app/root.tsx",
+  "app/routes.ts",
+  "app/routes/home.test.tsx",
+  "app/routes/home.tsx",
+  "app/routes/login.tsx",
+  "app/routes/register.tsx",
+  "CLAUDE.md",
+  "components.json",
+  "e2e/home.spec.ts",
+  "eslint.config.js",
+  "package.json",
+  "pb_hooks/admin.pb.js",
+  "pb_hooks/main.pb.js",
+  "pb_migrations/1700000000_create_posts.js",
+  "pb_migrations/1700000001_configure_auth.js",
+  "playwright.config.ts",
+  "react-router.config.ts",
+  "README.md",
+  "scripts/pb-public.mjs",
+  "tsconfig.json",
+  "vite.config.ts",
+  "vitest.config.ts",
+  "vitest.setup.ts",
+]
+`;
+
 exports[`scaffold integration (sveltekit) > produces the expected file tree with password auth 1`] = `
 [
   ".env.example",
