@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+@plugin 'daisyui';
+
+/* Map the shared design tokens (bg-background, text-muted-foreground, …)
+   onto the active daisyUI theme so the app templates render consistently
+   regardless of design system. */
+@theme inline {
+  --color-background: var(--color-base-100);
+  --color-foreground: var(--color-base-content);
+  --color-card: var(--color-base-100);
+  --color-card-foreground: var(--color-base-content);
+  --color-muted-foreground: var(--color-neutral);
+  --color-destructive: var(--color-error);
+  --color-border: var(--color-base-300);
+  --color-input: var(--color-base-300);
+  --color-ring: var(--color-primary);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+}
