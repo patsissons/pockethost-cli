@@ -1,0 +1,30 @@
+{
+  "name": "base",
+  "packageJson": {
+    "scripts": {
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "typegen": "pocketbase-typegen --url $PB_TYPEGEN_URL --email $PB_TYPEGEN_EMAIL --password $PB_TYPEGEN_PASSWORD --out src/lib/pocketbase-types.ts",
+      "typecheck": "tsc --noEmit",
+      "lint": "eslint .",
+      "format": "prettier --write .",
+      "format:check": "prettier --check .",
+      "validate:quick": "run-s format:check typecheck lint test",
+      "validate": "run-s validate:quick test:e2e",
+      "format-and-validate": "run-s format validate"
+    },
+    "dependencies": {
+      "pocketbase": "^0.27.0"
+    },
+    "devDependencies": {
+      "npm-run-all2": "^9.0.2",
+      "pocketbase-typegen": "^1.5.0",
+      "prettier": "^3.9.5"
+    },
+    "extra": {
+      "engines": {
+        "node": ">=20"
+      }
+    }
+  }
+}

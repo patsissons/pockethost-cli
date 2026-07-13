@@ -1,0 +1,62 @@
+# <%= it.appName %>
+
+A [PocketHost](https://pockethost.io/)-backed web app scaffolded with `ph create`.
+
+- Frontend: <% if (it.framework === 'vite-react') { %>Vite + React<% } else if (it.framework === 'sveltekit') { %>SvelteKit (static adapter)<% } else if (it.framework === 'react-router') { %>React Router 7 (SPA mode)<% } else { %>Next.js (<%= it.nextMode %>)<% } %> + Tailwind CSS<% if (it.design === 'shadcn') { %> + shadcn/ui<% } else if (it.design === 'daisyui') { %> + daisyUI<% } %>
+- Backend: [PocketBase](https://pocketbase.io/) hosted on PocketHost<% if (it.instanceName) { %> (`<%= it.instanceUrl %>`)<% } %>
+
+## Setup
+
+```sh
+<%= it.pm.name %> install
+cp .env.example .env
+```
+
+For e2e tests, install the Playwright browser once:
+
+```sh
+<%= it.pm.dlx %> playwright install chromium
+```
+
+## Development
+
+```sh
+<%= it.pm.run %> dev
+```
+
+The dev server talks to the PocketBase URL in your `.env`. Backend files (`pb_migrations/`, `pb_hooks/`) sync to your instance with `<%= it.pm.dlx %> phio dev` (watch mode).
+
+## Deployment
+
+The production build outputs to `pb_public/`, which PocketBase serves directly:
+
+```sh
+<%= it.pm.run %> build
+<%= it.pm.dlx %> phio deploy
+```
+
+<% if (it.instanceName) { %>Your app is deployed at [<%= it.instanceUrl %>](<%= it.instanceUrl %>).<% } else { %>Link an instance first with `<%= it.pm.dlx %> phio link <instance-name>` (create one at [pockethost.io/instances/new](https://pockethost.io/instances/new)).<% } %>
+
+## Schema & types
+
+- Evolve the schema by adding files to `pb_migrations/` — they run automatically when the instance restarts (and locally on `pocketbase serve`).
+- Regenerate TypeScript types from the live schema:
+
+```sh
+PB_TYPEGEN_URL=<%= it.pocketbaseUrl %> PB_TYPEGEN_EMAIL=<admin-email> PB_TYPEGEN_PASSWORD=<admin-password> <%= it.pm.run %> typegen
+```
+
+The admin account is your pockethost.io login (PocketHost Admin Sync provisions it automatically).
+
+## Scripts
+
+| Script                              | What it does                                          |
+| ----------------------------------- | ----------------------------------------------------- |
+| `<%= it.pm.run %> dev`                 | Run the dev server                                    |
+| `<%= it.pm.run %> build`               | Production build into `pb_public/`                    |
+| `<%= it.pm.run %> test`                | Unit tests (vitest)                                   |
+| `<%= it.pm.run %> test:e2e`            | Playwright e2e tests                                  |
+| `<%= it.pm.run %> typegen`             | Regenerate `src/lib/pocketbase-types.ts` from schema  |
+| `<%= it.pm.run %> validate:quick`      | format check + typecheck + lint + unit tests          |
+| `<%= it.pm.run %> validate`            | `validate:quick` + e2e tests                          |
+| `<%= it.pm.run %> format-and-validate` | Prettier write, then `validate` — run before commits  |
