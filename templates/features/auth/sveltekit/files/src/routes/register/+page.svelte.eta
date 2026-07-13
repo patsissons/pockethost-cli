@@ -1,0 +1,91 @@
+<script lang="ts">
+  import { goto } from '$app/navigation'
+  import Button from '$lib/components/ui/button.svelte'
+  import Card from '$lib/components/ui/card.svelte'
+  import CardContent from '$lib/components/ui/card-content.svelte'
+  import CardDescription from '$lib/components/ui/card-description.svelte'
+  import CardHeader from '$lib/components/ui/card-header.svelte'
+  import CardTitle from '$lib/components/ui/card-title.svelte'
+  import Input from '$lib/components/ui/input.svelte'
+  import Label from '$lib/components/ui/label.svelte'
+  import { auth } from '$lib/auth.svelte'
+
+  let email = $state('')
+  let password = $state('')
+  let confirm = $state('')
+  let error = $state<string | null>(null)
+  let busy = $state(false)
+
+  async function onSubmit(event: SubmitEvent) {
+    event.preventDefault()
+    if (password !== confirm) {
+      error = 'Passwords do not match.'
+      return
+    }
+    busy = true
+    error = null
+    try {
+      await auth.register(email, password)
+      goto('/')
+    } catch {
+      error = 'Registration failed. The email may already be in use.'
+    } finally {
+      busy = false
+    }
+  }
+</script>
+
+<div class="mx-auto max-w-sm">
+  <Card>
+    <CardHeader>
+      <CardTitle>Create an account</CardTitle>
+      <CardDescription>Get started with <%= it.appName %></CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      <form onsubmit={onSubmit} class="space-y-4">
+        <div class="space-y-2">
+          <Label for="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            autocomplete="email"
+            bind:value={email}
+            required
+          />
+        </div>
+        <div class="space-y-2">
+          <Label for="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            autocomplete="new-password"
+            minlength={8}
+            bind:value={password}
+            required
+          />
+        </div>
+        <div class="space-y-2">
+          <Label for="confirm">Confirm password</Label>
+          <Input
+            id="confirm"
+            type="password"
+            autocomplete="new-password"
+            minlength={8}
+            bind:value={confirm}
+            required
+          />
+        </div>
+        <Button type="submit" class="w-full" disabled={busy}>
+          {busy ? 'Creating account…' : 'Register'}
+        </Button>
+      </form>
+      {#if error}
+        <p class="text-destructive text-sm">{error}</p>
+      {/if}
+      <p class="text-muted-foreground text-center text-sm">
+        Already have an account?
+        <a href="/login" class="underline">Log in</a>
+      </p>
+    </CardContent>
+  </Card>
+</div>

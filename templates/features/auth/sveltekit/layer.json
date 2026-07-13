@@ -1,0 +1,6 @@
+{
+  "name": "auth-sveltekit",
+  "conditions": {
+    "src/routes/register/+page.svelte": "auth.password"
+  }
+}

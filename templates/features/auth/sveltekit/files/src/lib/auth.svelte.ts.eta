@@ -1,0 +1,68 @@
+import type { AuthRecord } from 'pocketbase'
+import { pb } from '$lib/pocketbase'
+
+<% if (it.auth.mfa) { %>/** Thrown when PocketBase demands a second factor to finish logging in. */
+export class MfaRequiredError extends Error {
+  mfaId: string
+
+  constructor(mfaId: string) {
+    super('Multi-factor authentication required')
+    this.mfaId = mfaId
+  }
+}
+
+function mfaIdFrom(error: unknown): string | undefined {
+  if (error && typeof error === 'object' && 'response' in error) {
+    return (error as { response?: { mfaId?: string } }).response?.mfaId
+  }
+  return undefined
+}
+
+<% } %>class AuthStore {
+  user = $state<AuthRecord | null>(pb.authStore.record)
+
+  constructor() {
+    pb.authStore.onChange(() => {
+      this.user = pb.authStore.record
+    })
+  }
+
+<% if (it.auth.password) { %>  async login(email: string, password: string) {
+<% if (it.auth.mfa) { %>    try {
+      await pb.collection('users').authWithPassword(email, password)
+    } catch (error) {
+      const mfaId = mfaIdFrom(error)
+      if (mfaId) throw new MfaRequiredError(mfaId)
+      throw error
+    }
+<% } else { %>    await pb.collection('users').authWithPassword(email, password)
+<% } %>  }
+
+  async register(email: string, password: string) {
+    await pb
+      .collection('users')
+      .create({ email, password, passwordConfirm: password })
+    await pb.collection('users').authWithPassword(email, password)
+  }
+
+<% } %><% if (it.auth.otp) { %>  async requestOtp(email: string) {
+    const result = await pb.collection('users').requestOTP(email)
+    return result.otpId
+  }
+
+  async loginWithOtp(otpId: string, code: string<% if (it.auth.mfa) { %>, mfaId?: string<% } %>) {
+    await pb
+      .collection('users')
+      .authWithOTP(otpId, code<% if (it.auth.mfa) { %>, mfaId ? { mfaId } : undefined<% } %>)
+  }
+
+<% } %><% if (it.auth.oauth.length > 0) { %>  async loginWithOAuth(provider: string) {
+    await pb.collection('users').authWithOAuth2({ provider })
+  }
+
+<% } %>  logout() {
+    pb.authStore.clear()
+  }
+}
+
+export const auth = new AuthStore()
