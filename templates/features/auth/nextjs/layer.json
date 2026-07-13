@@ -1,0 +1,6 @@
+{
+  "name": "auth-nextjs",
+  "conditions": {
+    "app/register/page.tsx": "auth.password"
+  }
+}
