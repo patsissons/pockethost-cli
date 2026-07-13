@@ -3,7 +3,11 @@ import * as clack from '@clack/prompts'
 import pc from 'picocolors'
 import { executePlan } from '../core/engine.js'
 import { buildPlan } from '../core/plan.js'
+import { selectInstance } from '../phio/instance.js'
+import { buildApp, linkAndDeploy } from '../steps/deploy.js'
 import { installDependencies } from '../steps/install.js'
+import { preflight } from '../steps/preflight.js'
+import { buildSummary } from '../steps/summary.js'
 import { validateApp } from '../steps/validate.js'
 import { templatesRoot } from '../utils/paths.js'
 import {
@@ -24,18 +28,56 @@ export function createCommand(): Command {
     clack.intro(pc.bgCyan(pc.black(' ph create ')))
 
     const partial = flagsToPartialAnswers(flags)
+    const interactive =
+      partial.interactive && !partial.yes && process.stdout.isTTY
     const answers = await fillAnswers(partial, dir)
 
-    if (!answers.skipPhio) {
-      // Instance selection, linking, and deploy land with the phio
-      // integration (P2). Until then everything runs scaffold-only.
-      clack.log.warn(
-        'phio integration is not wired up yet — running scaffold-only.',
-      )
-      answers.skipPhio = true
-      answers.deploy = false
+    // --- phio preflight + instance selection (before the plan is built so
+    // the chosen instance URL lands in the scaffolded .env/README) ---------
+    const pre = await preflight({
+      packageManager: answers.packageManager,
+      interactive,
+      skipPhio: answers.skipPhio || !partial.linkInstance,
+    })
+    for (const warning of pre.warnings) clack.log.warn(warning)
+
+    if (pre.phioReady && pre.client && partial.linkInstance) {
+      answers.instanceName = await selectInstance(pre.client, answers.name, {
+        interactive,
+        requestedInstance: partial.instanceName,
+      })
     }
 
+    if (interactive) {
+      const auth =
+        [
+          ...answers.authFactors,
+          ...answers.oauthProviders.map((p) => `oauth:${p}`),
+          ...(answers.mfa ? ['mfa'] : []),
+        ].join(', ') || 'none'
+      clack.note(
+        [
+          `App:        ${answers.name} → ${answers.targetDir}`,
+          `Framework:  ${answers.framework}${answers.nextMode ? ` (${answers.nextMode})` : ''}`,
+          `Design:     ${answers.design}`,
+          `Auth:       ${auth}`,
+          `PM:         ${answers.packageManager}`,
+          `Instance:   ${answers.instanceName ?? 'none (link later)'}`,
+          `Domain:     ${answers.customDomain ?? 'none'}`,
+        ].join('\n'),
+        'Ready to scaffold',
+      )
+      const go = await clack.confirm({
+        message: 'Proceed?',
+        initialValue: true,
+      })
+      if (clack.isCancel(go) || !go) {
+        clack.cancel('Cancelled.')
+        process.exit(1)
+      }
+    }
+
+    // --- scaffold --------------------------------------------------------
     const spinner = clack.spinner()
     spinner.start(
       `Scaffolding ${answers.name} (${answers.framework} + ${answers.design})`,
@@ -45,9 +87,9 @@ export function createCommand(): Command {
     spinner.stop(
       `Scaffolded ${result.files.length} files into ${answers.targetDir}`,
     )
-
     for (const warning of result.warnings) clack.log.warn(warning)
 
+    // --- install + validate ------------------------------------------------
     if (answers.install) {
       clack.log.step(`Installing dependencies with ${answers.packageManager}…`)
       await installDependencies(answers)
@@ -64,13 +106,29 @@ export function createCommand(): Command {
       clack.log.info('Skipped validation (--no-validate).')
     }
 
+    // --- build + deploy ----------------------------------------------------
+    let deployed = false
+    if (
+      answers.deploy &&
+      answers.install &&
+      pre.phioReady &&
+      pre.client &&
+      answers.instanceName
+    ) {
+      clack.log.step(`Building and deploying to ${answers.instanceName}…`)
+      await buildApp(answers)
+      const warnings = await linkAndDeploy(pre.client, {
+        ...answers,
+        instanceName: answers.instanceName,
+      })
+      for (const warning of warnings) clack.log.warn(warning)
+      deployed = true
+    } else if (answers.instanceName && !answers.deploy) {
+      clack.log.info('Skipped deploy (--no-deploy).')
+    }
+
     clack.outro(
-      [
-        pc.green('Done!'),
-        '',
-        `  cd ${answers.targetDir}`,
-        `  ${plan.templateData.pm.run} dev`,
-      ].join('\n'),
+      buildSummary({ answers, templateData: plan.templateData, deployed }),
     )
   })
 

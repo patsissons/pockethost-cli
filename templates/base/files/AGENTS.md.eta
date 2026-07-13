@@ -8,7 +8,7 @@ After making changes from a prompt and BEFORE committing:
 2. Update any documentation affected by the changes (README.md, this file).
 3. Run `<%= it.pm.run %> format-and-validate` and repair any regressions in-line. This includes the Playwright e2e suite — never skip it; web apps regress on e2e easily.
 
-If Playwright's browser is missing, install it with `<%= it.pm.dlx %> playwright install chromium` rather than skipping e2e.
+If Playwright's browser is missing, install it with `<%= it.pm.exec %> playwright install chromium` rather than skipping e2e.
 
 ## Git conventions
 
@@ -24,9 +24,11 @@ If Playwright's browser is missing, install it with `<%= it.pm.dlx %> playwright
 
 ## PocketHost workflow
 
-- `<%= it.pm.dlx %> phio dev` — watch-sync `pb_*` files to the instance while developing.
-- `<%= it.pm.run %> build && <%= it.pm.dlx %> phio deploy` — build and deploy.
-- `<%= it.pm.dlx %> phio logs` — stream instance logs.
+phio is the PocketHost CLI (`npm install -g phio`; requires Node 24+).
+
+- `phio dev` — watch-sync `pb_*` files to the instance while developing.
+- `<%= it.pm.run %> build && phio deploy` — build and deploy.
+- `phio logs` — stream instance logs.
 - Schema changes go in `pb_migrations/` (auto-run on instance restart). After schema changes, run `<%= it.pm.run %> typegen` (needs `PB_TYPEGEN_URL`, `PB_TYPEGEN_EMAIL`, `PB_TYPEGEN_PASSWORD` env vars) and commit the regenerated types.
 - Secrets (OAuth client IDs, API keys) belong in the PocketHost dashboard (Secrets), surfaced to hooks/migrations via `$os.getenv(...)`. Never hardcode them.
 - CI deploys use `PHIO_USERNAME`, `PHIO_PASSWORD`, `PHIO_INSTANCE_NAME` env vars with `phio deploy`.

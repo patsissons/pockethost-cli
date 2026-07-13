@@ -100,6 +100,7 @@ describe('buildTemplateData', () => {
       name: 'bun',
       run: 'bun run',
       dlx: 'bunx',
+      exec: 'bun x',
     })
   })
 })

@@ -12,10 +12,17 @@ A [PocketHost](https://pockethost.io/)-backed web app scaffolded with `ph create
 cp .env.example .env
 ```
 
+Backend syncing/deployment uses the [phio CLI](https://pockethost.io/docs/phio) (requires Node 24+):
+
+```sh
+npm install -g phio
+phio login
+```
+
 For e2e tests, install the Playwright browser once:
 
 ```sh
-<%= it.pm.dlx %> playwright install chromium
+<%= it.pm.exec %> playwright install chromium
 ```
 
 ## Development
@@ -24,7 +31,7 @@ For e2e tests, install the Playwright browser once:
 <%= it.pm.run %> dev
 ```
 
-The dev server talks to the PocketBase URL in your `.env`. Backend files (`pb_migrations/`, `pb_hooks/`) sync to your instance with `<%= it.pm.dlx %> phio dev` (watch mode).
+The dev server talks to the PocketBase URL in your `.env`. Backend files (`pb_migrations/`, `pb_hooks/`) sync to your instance with `phio dev` (watch mode).
 
 ## Deployment
 
@@ -32,10 +39,10 @@ The production build outputs to `pb_public/`, which PocketBase serves directly:
 
 ```sh
 <%= it.pm.run %> build
-<%= it.pm.dlx %> phio deploy
+phio deploy
 ```
 
-<% if (it.instanceName) { %>Your app is deployed at [<%= it.instanceUrl %>](<%= it.instanceUrl %>).<% } else { %>Link an instance first with `<%= it.pm.dlx %> phio link <instance-name>` (create one at [pockethost.io/instances/new](https://pockethost.io/instances/new)).<% } %>
+<% if (it.instanceName) { %>Your app is deployed at [<%= it.instanceUrl %>](<%= it.instanceUrl %>).<% } else { %>Link an instance first with `phio link <instance-name>` (create one at [pockethost.io/instances/new](https://pockethost.io/instances/new)).<% } %>
 
 ## Schema & types
 

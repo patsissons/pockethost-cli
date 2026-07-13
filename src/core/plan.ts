@@ -29,6 +29,8 @@ export interface TemplateData {
     run: string
     /** One-off package runner, e.g. `pnpm dlx` / `npx` / `bunx`. */
     dlx: string
+    /** Local-binary runner, e.g. `pnpm exec` / `npx` / `bun x`. */
+    exec: string
   }
   instanceName?: string
   /** https://<instance>.pockethost.io when an instance is chosen. */
@@ -82,9 +84,9 @@ export interface ScaffoldPlan {
 
 const PM_COMMANDS: Record<WizardAnswers['packageManager'], TemplateData['pm']> =
   {
-    pnpm: { name: 'pnpm', run: 'pnpm', dlx: 'pnpm dlx' },
-    bun: { name: 'bun', run: 'bun run', dlx: 'bunx' },
-    npm: { name: 'npm', run: 'npm run', dlx: 'npx' },
+    pnpm: { name: 'pnpm', run: 'pnpm', dlx: 'pnpm dlx', exec: 'pnpm exec' },
+    bun: { name: 'bun', run: 'bun run', dlx: 'bunx', exec: 'bun x' },
+    npm: { name: 'npm', run: 'npm run', dlx: 'npx', exec: 'npx' },
   }
 
 export const LOCAL_POCKETBASE_URL = 'http://127.0.0.1:8090'
