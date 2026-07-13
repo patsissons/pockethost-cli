@@ -17,7 +17,7 @@ If Playwright's browser is missing, install it with `<%= it.pm.exec %> playwrigh
 
 ## Architecture
 
-- **Frontend**: <% if (it.framework === 'vite-react') { %>Vite + React SPA<% } else if (it.framework === 'sveltekit') { %>SvelteKit with adapter-static<% } else if (it.framework === 'react-router') { %>React Router 7 in SPA mode<% } else { %>Next.js (<%= it.nextMode %> mode)<% } %>. The production build outputs to `pb_public/`, which PocketBase serves directly (with `index.html` fallback for client-side routing).
+- **Frontend**: <% if (it.framework === 'vite-react') { %>Vite + React SPA<% } else if (it.framework === 'sveltekit') { %>SvelteKit with adapter-static<% } else if (it.framework === 'react-router') { %>React Router 7 in SPA mode<% } else { %>Next.js (<%= it.nextMode %> mode)<% } %>. <% if (it.framework === 'nextjs' && it.nextMode === 'ssr') { %>The frontend deploys to an external host (Vercel/Cloudflare); the PocketHost instance serves only the PocketBase backend plus a placeholder page.<% } else { %>The production build outputs to `pb_public/`, which PocketBase serves directly (with `index.html` fallback for client-side routing).<% } %>
 - **Backend**: PocketBase hosted on PocketHost<% if (it.instanceName) { %> at `<%= it.instanceUrl %>`<% } %>. There is no custom server — server-side logic lives in `pb_hooks/` (PocketBase JSVM) and schema in `pb_migrations/`.
 - The PocketBase client singleton is `src/lib/pocketbase.ts`; generated record types are `src/lib/pocketbase-types.ts`.
 - UI primitives live at `src/components/ui/` (button, input, label, card). Pages import from there — keep that contract if you add or swap components.
@@ -35,5 +35,5 @@ phio is the PocketHost CLI (`npm install -g phio`; requires Node 24+).
 
 ## Constraints
 
-- PocketHost serves only static files (`pb_public/`), hooks (`pb_hooks/`), and migrations (`pb_migrations/`) — no custom server processes. Don't add SSR or API routes that assume a Node server.
+- PocketHost serves only static files (`pb_public/`), hooks (`pb_hooks/`), and migrations (`pb_migrations/`) — no custom server processes. <% if (it.framework === 'nextjs' && it.nextMode === 'ssr') { %>SSR/API routes run on the external frontend host, never on PocketHost.<% } else { %>Don't add SSR or API routes that assume a Node server.<% } %>
 - `pb_hooks/` runs in PocketBase's JSVM (ES5-ish + PocketBase globals, no npm imports). Keep hooks dependency-free.

@@ -17,9 +17,19 @@ export function buildSummary({
   const lines: string[] = []
   const pm = templateData.pm
 
+  const externalFrontend =
+    answers.framework === 'nextjs' && answers.nextMode === 'ssr'
+
   if (deployed && answers.instanceName) {
     const url = instanceUrlFor(answers.instanceName)
-    lines.push(pc.green(`Your app is live: ${url}`))
+    if (externalFrontend) {
+      lines.push(pc.green(`Your backend is live: ${url}`))
+      lines.push(
+        '(SSR mode: the frontend deploys to an external host — see below.)',
+      )
+    } else {
+      lines.push(pc.green(`Your app is live: ${url}`))
+    }
     lines.push(
       `Admin UI: ${url}/_/ (log in with your pockethost.io credentials — Admin Sync)`,
     )
@@ -38,6 +48,25 @@ export function buildSummary({
   lines.push('Next steps:')
   lines.push(`  cd ${answers.targetDir}`)
   lines.push(`  ${pm.run} dev`)
+
+  if (externalFrontend) {
+    const backendUrl = answers.instanceName
+      ? instanceUrlFor(answers.instanceName)
+      : 'https://<instance>.pockethost.io'
+    lines.push('')
+    lines.push(pc.bold('Frontend hosting (Next.js SSR mode):'))
+    lines.push('  1. Push this repo and import it into Vercel or Cloudflare.')
+    lines.push(
+      `  2. Set NEXT_PUBLIC_POCKETBASE_URL=${backendUrl} in the host's env settings.`,
+    )
+    lines.push(
+      '  3. Backend changes deploy separately with phio deploy (pb_migrations, pb_hooks).',
+    )
+    lines.push(
+      '  Optional: CNAME db.<your-domain> → the instance for a same-site backend subdomain ' +
+        '(PocketBase CORS is permissive by default).',
+    )
+  }
 
   if (answers.oauthProviders.length > 0) {
     lines.push('')

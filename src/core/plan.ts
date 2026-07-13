@@ -233,7 +233,7 @@ export function commitGroupFor(
       base === 'components.json' ||
       base.startsWith('tsconfig') ||
       base.startsWith('.') ||
-      /\.config\.[jt]s$/.test(base) ||
+      /\.config\.[cm]?[jt]s$/.test(base) ||
       base === '.env.example')
   if (isRootConfig) return 'tooling'
 

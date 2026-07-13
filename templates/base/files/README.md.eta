@@ -35,14 +35,20 @@ The dev server talks to the PocketBase URL in your `.env`. Backend files (`pb_mi
 
 ## Deployment
 
-The production build outputs to `pb_public/`, which PocketBase serves directly:
+<% if (it.framework === 'nextjs' && it.nextMode === 'ssr') { %>This app runs in **SSR mode**: the frontend deploys to an external host (Vercel, Cloudflare) while the PocketHost instance serves only the PocketBase backend.
+
+1. Push this repo and import it into your frontend host.
+2. Set `NEXT_PUBLIC_POCKETBASE_URL=<%= it.instanceUrl || 'https://<instance>.pockethost.io' %>` in the host's environment settings.
+3. Deploy backend changes (schema, hooks) with `phio deploy`.
+
+Optional: point a `db.<your-domain>` CNAME at the instance for a same-site backend subdomain (PocketBase CORS is permissive by default).<% } else { %>The production build outputs to `pb_public/`, which PocketBase serves directly:
 
 ```sh
 <%= it.pm.run %> build
 phio deploy
-```
+```<% } %>
 
-<% if (it.instanceName) { %>Your app is deployed at [<%= it.instanceUrl %>](<%= it.instanceUrl %>).<% } else { %>Link an instance first with `phio link <instance-name>` (create one at [pockethost.io/instances/new](https://pockethost.io/instances/new)).<% } %>
+<% if (it.instanceName) { %>Your <% if (it.framework === 'nextjs' && it.nextMode === 'ssr') { %>backend<% } else { %>app<% } %> is deployed at [<%= it.instanceUrl %>](<%= it.instanceUrl %>).<% } else { %>Link an instance first with `phio link <instance-name>` (create one at [pockethost.io/instances/new](https://pockethost.io/instances/new)).<% } %>
 
 ## Schema & types
 
@@ -60,7 +66,7 @@ The admin account is your pockethost.io login (PocketHost Admin Sync provisions 
 | Script                              | What it does                                          |
 | ----------------------------------- | ----------------------------------------------------- |
 | `<%= it.pm.run %> dev`                 | Run the dev server                                    |
-| `<%= it.pm.run %> build`               | Production build into `pb_public/`                    |
+| `<%= it.pm.run %> build`               | Production build<% if (it.framework === 'nextjs' && it.nextMode === 'ssr') { %> (deploys via your frontend host)<% } else { %> into `pb_public/`<% } %> |
 | `<%= it.pm.run %> test`                | Unit tests (vitest)                                   |
 | `<%= it.pm.run %> test:e2e`            | Playwright e2e tests                                  |
 | `<%= it.pm.run %> typegen`             | Regenerate the PocketBase record types from schema    |
