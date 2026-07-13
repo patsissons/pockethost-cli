@@ -216,3 +216,74 @@ describe('scaffold integration (vite-react)', () => {
     expect(login).not.toContain('FormEvent')
   })
 })
+
+describe('scaffold integration (sveltekit)', () => {
+  it('produces the expected file tree with password auth', async () => {
+    const { targetDir, result } = await scaffold({ framework: 'sveltekit' })
+
+    expect(result.warnings).toEqual([])
+    expect(result.files.map((f) => f.target)).toMatchSnapshot()
+
+    const svelteConfig = await readFile(
+      path.join(targetDir, 'svelte.config.js'),
+      'utf8',
+    )
+    expect(svelteConfig).toContain("pages: 'pb_public'")
+    expect(svelteConfig).toContain("fallback: 'index.html'")
+
+    const appHtml = await readFile(path.join(targetDir, 'src/app.html'), 'utf8')
+    expect(appHtml).toContain('<title>demo-app</title>')
+
+    const prettierRc = JSON.parse(
+      await readFile(path.join(targetDir, '.prettierrc'), 'utf8'),
+    ) as { plugins?: string[] }
+    expect(prettierRc.plugins).toContain('prettier-plugin-svelte')
+  })
+
+  it('svelte output is prettier-clean under the app config', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'sveltekit',
+      authFactors: ['password', 'otp'],
+      oauthProviders: ['google'],
+      mfa: true,
+    })
+    const config = JSON.parse(
+      await readFile(path.join(targetDir, '.prettierrc'), 'utf8'),
+    ) as Record<string, unknown>
+
+    for (const { target } of result.files) {
+      const content = await readFile(path.join(targetDir, target), 'utf8')
+      let clean: boolean
+      if (target.endsWith('.svelte')) {
+        // prettier-plugin-svelte resolves from the CLI's node_modules here.
+        clean = await prettier.check(content, {
+          ...config,
+          filepath: target,
+          parser: 'svelte',
+          plugins: ['prettier-plugin-svelte'],
+        })
+      } else {
+        const { inferredParser } = await prettier.getFileInfo(target)
+        if (!inferredParser) continue
+        clean = await prettier.check(content, {
+          ...config,
+          plugins: [],
+          filepath: target,
+        })
+      }
+      expect.soft(clean, `${target} is not prettier-clean`).toBe(true)
+    }
+  })
+
+  it('omits the register route for oauth-only auth', async () => {
+    const { result } = await scaffold({
+      framework: 'sveltekit',
+      authFactors: [],
+      oauthProviders: ['google'],
+    })
+    const targets = result.files.map((f) => f.target)
+    expect(targets).toContain('src/routes/login/+page.svelte')
+    expect(targets).not.toContain('src/routes/register/+page.svelte')
+    expect(targets).toContain('src/lib/auth.svelte.ts')
+  })
+})

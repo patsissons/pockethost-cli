@@ -1,5 +1,53 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`scaffold integration (sveltekit) > produces the expected file tree with password auth 1`] = `
+[
+  ".env.example",
+  ".gitignore",
+  ".prettierignore",
+  ".prettierrc",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "e2e/home.spec.ts",
+  "eslint.config.js",
+  "package.json",
+  "pb_hooks/admin.pb.js",
+  "pb_hooks/main.pb.js",
+  "pb_migrations/1700000000_create_posts.js",
+  "pb_migrations/1700000001_configure_auth.js",
+  "playwright.config.ts",
+  "README.md",
+  "src/app.css",
+  "src/app.d.ts",
+  "src/app.html",
+  "src/lib/auth.svelte.ts",
+  "src/lib/components/ui/button.svelte",
+  "src/lib/components/ui/card-content.svelte",
+  "src/lib/components/ui/card-description.svelte",
+  "src/lib/components/ui/card-header.svelte",
+  "src/lib/components/ui/card-title.svelte",
+  "src/lib/components/ui/card.svelte",
+  "src/lib/components/ui/input.svelte",
+  "src/lib/components/ui/label.svelte",
+  "src/lib/logger.test.ts",
+  "src/lib/logger.ts",
+  "src/lib/pocketbase-types.ts",
+  "src/lib/pocketbase.ts",
+  "src/lib/utils.ts",
+  "src/routes/+layout.svelte",
+  "src/routes/+layout.ts",
+  "src/routes/+page.svelte",
+  "src/routes/login/+page.svelte",
+  "src/routes/page.test.ts",
+  "src/routes/register/+page.svelte",
+  "svelte.config.js",
+  "tsconfig.json",
+  "vite.config.ts",
+  "vitest.config.ts",
+  "vitest.setup.ts",
+]
+`;
+
 exports[`scaffold integration (vite-react) > produces the expected file tree with password auth 1`] = `
 [
   ".env.example",
