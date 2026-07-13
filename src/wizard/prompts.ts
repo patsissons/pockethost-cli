@@ -11,7 +11,7 @@ import {
   type WizardAnswers,
 } from './answers.js'
 import { ANSWER_DEFAULTS, type PartialAnswers } from './flags.js'
-import { validateAppName } from './validate.js'
+import { validateAppName, validateCustomDomain } from './validate.js'
 
 const FRAMEWORK_LABELS: Record<(typeof FRAMEWORKS)[number], string> = {
   'vite-react': 'React (Vite SPA)',
@@ -200,6 +200,22 @@ export async function fillAnswers(
         )
       : ANSWER_DEFAULTS.packageManager)
 
+  let customDomain = partial.customDomain
+  if (customDomain !== undefined) {
+    const domainError = validateCustomDomain(customDomain)
+    if (domainError) throw new Error(`Invalid --domain "${customDomain}": ${domainError}`)
+  } else if (interactive) {
+    const input = accept(
+      await clack.text({
+        message: 'Custom domain (optional — press enter to skip)',
+        placeholder: 'app.example.com',
+        defaultValue: '',
+        validate: (value) => (value ? validateCustomDomain(value) : undefined),
+      }),
+    )
+    customDomain = input || undefined
+  }
+
   const targetDir = path.resolve(directoryArg ?? name)
 
   return {
@@ -213,7 +229,7 @@ export async function fillAnswers(
     mfa,
     packageManager,
     instanceName: partial.instanceName,
-    customDomain: partial.customDomain,
+    customDomain,
     install: partial.install,
     validate: partial.validate,
     deploy: partial.deploy,

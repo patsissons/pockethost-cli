@@ -1,5 +1,6 @@
 import { Command } from 'commander'
 import { createCommand } from './commands/create.js'
+import { doctorCommand } from './commands/doctor.js'
 import pkg from '../package.json' with { type: 'json' }
 
 export function buildProgram(): Command {
@@ -11,6 +12,7 @@ export function buildProgram(): Command {
     .version(pkg.version)
 
   program.addCommand(createCommand())
+  program.addCommand(doctorCommand())
 
   return program
 }
