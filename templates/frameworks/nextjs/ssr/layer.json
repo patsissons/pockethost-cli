@@ -1,0 +1,9 @@
+{
+  "name": "nextjs-ssr",
+  "packageJson": {
+    "scripts": {
+      "build": "next build",
+      "start": "next start"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+pb_public/
+pb_data/
+pb_migrations/
+pb_hooks/
+.next/
+out/
+next-env.d.ts
+coverage/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+bun.lock
+package-lock.json

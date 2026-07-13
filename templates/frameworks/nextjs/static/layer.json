@@ -1,0 +1,8 @@
+{
+  "name": "nextjs-static",
+  "packageJson": {
+    "scripts": {
+      "build": "next build && node scripts/pb-public.mjs"
+    }
+  }
+}
