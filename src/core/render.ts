@@ -58,13 +58,37 @@ export function renderTemplate(content: string, data: object): string {
  * every scaffold is born `format:check`-clean. Template interpolation (app
  * names of varying length, conditional blocks) makes it impossible for the
  * stored templates to guarantee this themselves.
+ *
+ * Any `plugins` in the app's .prettierrc are string module names that resolve
+ * inside the APP's node_modules (which don't exist yet at scaffold time), so
+ * they are stripped here; plugins the CLI bundles itself (svelte) are wired
+ * up explicitly. Formatting failures fall back to the raw content — the
+ * scaffolded app's own format:check is the backstop.
  */
 export async function formatContent(
   target: string,
   content: string,
   prettierConfig: Record<string, unknown>,
 ): Promise<string> {
-  const { inferredParser } = await prettier.getFileInfo(target)
-  if (!inferredParser) return content
-  return prettier.format(content, { ...prettierConfig, filepath: target })
+  const config = { ...prettierConfig }
+  delete config.plugins
+  try {
+    if (target.endsWith('.svelte')) {
+      const sveltePlugin =
+        (await import('prettier-plugin-svelte')) as unknown as {
+          default: import('prettier').Plugin
+        }
+      return await prettier.format(content, {
+        ...config,
+        filepath: target,
+        parser: 'svelte',
+        plugins: [sveltePlugin.default ?? sveltePlugin],
+      })
+    }
+    const { inferredParser } = await prettier.getFileInfo(target)
+    if (!inferredParser) return content
+    return await prettier.format(content, { ...config, filepath: target })
+  } catch {
+    return content
+  }
 }
