@@ -69,3 +69,26 @@ describe('buildSummary', () => {
     expect(text).toContain('app.example.com → demo.pockethost.io')
   })
 })
+
+describe('buildSummary (nextjs ssr mode)', () => {
+  it('labels the instance as backend-only and adds frontend host steps', () => {
+    const text = summarize(
+      { framework: 'nextjs', nextMode: 'ssr', instanceName: 'demo' },
+      true,
+    )
+    expect(text).toContain('Your backend is live: https://demo.pockethost.io')
+    expect(text).toContain('Frontend hosting (Next.js SSR mode):')
+    expect(text).toContain(
+      'NEXT_PUBLIC_POCKETBASE_URL=https://demo.pockethost.io',
+    )
+  })
+
+  it('does not add the ssr section for static mode', () => {
+    const text = summarize(
+      { framework: 'nextjs', nextMode: 'static', instanceName: 'demo' },
+      true,
+    )
+    expect(text).toContain('Your app is live: https://demo.pockethost.io')
+    expect(text).not.toContain('Frontend hosting')
+  })
+})

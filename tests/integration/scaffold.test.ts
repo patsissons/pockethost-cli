@@ -371,3 +371,136 @@ describe('scaffold integration (react-router)', () => {
     expect(root).not.toContain('AuthProvider')
   })
 })
+
+describe('scaffold integration (nextjs)', () => {
+  it('static mode: expected tree, export config, and pb_public copy script', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'nextjs',
+      nextMode: 'static',
+    })
+
+    expect(result.warnings).toEqual([])
+    expect(result.files.map((f) => f.target)).toMatchSnapshot()
+
+    const nextConfig = await readFile(
+      path.join(targetDir, 'next.config.ts'),
+      'utf8',
+    )
+    expect(nextConfig).toContain("output: 'export'")
+    expect(nextConfig).toContain('unoptimized: true')
+
+    const pkg = JSON.parse(
+      await readFile(path.join(targetDir, 'package.json'), 'utf8'),
+    ) as {
+      scripts: Record<string, string>
+      devDependencies: Record<string, string>
+    }
+    expect(pkg.scripts.build).toContain('scripts/pb-public.mjs')
+    expect(pkg.scripts.typegen).toContain('lib/pocketbase-types.ts')
+    // eslint-config-next's plugin stack does not support eslint 10 yet
+    expect(pkg.devDependencies.eslint).toMatch(/\^9\./)
+
+    const prettierIgnore = await readFile(
+      path.join(targetDir, '.prettierignore'),
+      'utf8',
+    )
+    expect(prettierIgnore).toContain('.next/')
+
+    const layout = await readFile(
+      path.join(targetDir, 'app/layout.tsx'),
+      'utf8',
+    )
+    expect(layout).toContain('AuthProvider')
+
+    const env = await readFile(path.join(targetDir, '.env.example'), 'utf8')
+    expect(env).toContain('NEXT_PUBLIC_POCKETBASE_URL=')
+  })
+
+  it('ssr mode: no export config, no copy script, ssr docs', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'nextjs',
+      nextMode: 'ssr',
+    })
+
+    expect(result.files.map((f) => f.target)).toMatchSnapshot()
+    const targets = result.files.map((f) => f.target)
+    expect(targets).not.toContain('scripts/pb-public.mjs')
+
+    const nextConfig = await readFile(
+      path.join(targetDir, 'next.config.ts'),
+      'utf8',
+    )
+    expect(nextConfig).not.toContain("output: 'export'")
+
+    const pkg = JSON.parse(
+      await readFile(path.join(targetDir, 'package.json'), 'utf8'),
+    ) as { scripts: Record<string, string> }
+    expect(pkg.scripts.build).toBe('next build')
+
+    const readme = await readFile(path.join(targetDir, 'README.md'), 'utf8')
+    expect(readme).toContain('SSR mode')
+    expect(readme).toContain('NEXT_PUBLIC_POCKETBASE_URL=')
+
+    const agents = await readFile(path.join(targetDir, 'AGENTS.md'), 'utf8')
+    expect(agents).toContain('external host')
+  })
+
+  it('nextjs output is prettier-clean under the app config', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'nextjs',
+      nextMode: 'static',
+      authFactors: ['password', 'otp'],
+      oauthProviders: ['google'],
+      mfa: true,
+    })
+    const config = JSON.parse(
+      await readFile(path.join(targetDir, '.prettierrc'), 'utf8'),
+    ) as Record<string, unknown>
+
+    for (const { target } of result.files) {
+      const { inferredParser } = await prettier.getFileInfo(target)
+      if (!inferredParser) continue
+      const content = await readFile(path.join(targetDir, target), 'utf8')
+      const clean = await prettier.check(content, {
+        ...config,
+        filepath: target,
+      })
+      expect.soft(clean, `${target} is not prettier-clean`).toBe(true)
+    }
+  })
+
+  it('omits the register page for oauth-only auth', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'nextjs',
+      nextMode: 'static',
+      authFactors: [],
+      oauthProviders: ['google'],
+    })
+    const targets = result.files.map((f) => f.target)
+    expect(targets).toContain('app/login/page.tsx')
+    expect(targets).not.toContain('app/register/page.tsx')
+
+    const login = await readFile(
+      path.join(targetDir, 'app/login/page.tsx'),
+      'utf8',
+    )
+    expect(login).not.toContain('FormEvent')
+  })
+
+  it('omits auth entirely when no auth is selected', async () => {
+    const { targetDir, result } = await scaffold({
+      framework: 'nextjs',
+      nextMode: 'static',
+      authFactors: [],
+      oauthProviders: [],
+    })
+    const targets = result.files.map((f) => f.target)
+    expect(targets).not.toContain('lib/auth.tsx')
+    expect(targets).not.toContain('components/HeaderNav.tsx')
+    const layout = await readFile(
+      path.join(targetDir, 'app/layout.tsx'),
+      'utf8',
+    )
+    expect(layout).not.toContain('AuthProvider')
+  })
+})

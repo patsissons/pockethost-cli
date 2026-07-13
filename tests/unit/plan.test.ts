@@ -126,3 +126,18 @@ describe('commitGroupFor', () => {
     expect(commitGroupFor(kind, target)).toBe(expected)
   })
 })
+
+describe('isExternalFrontend', () => {
+  it('is true only for nextjs ssr', async () => {
+    const { isExternalFrontend } = await import('../../src/steps/deploy.js')
+    expect(isExternalFrontend({ framework: 'nextjs', nextMode: 'ssr' })).toBe(
+      true,
+    )
+    expect(
+      isExternalFrontend({ framework: 'nextjs', nextMode: 'static' }),
+    ).toBe(false)
+    expect(
+      isExternalFrontend({ framework: 'vite-react', nextMode: undefined }),
+    ).toBe(false)
+  })
+})
