@@ -1,20 +1,20 @@
 import { useState<% if (it.auth.password || it.auth.otp) { %>, type FormEvent<% } %> } from 'react'
 import { <% if (it.auth.password) { %>Link, <% } %>useNavigate } from 'react-router'
-import { Button } from '@/components/ui/button'
+import { Button } from '~/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-<% if (it.auth.password || it.auth.otp) { %>import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-<% } %>import { <% if (it.auth.mfa && it.auth.password) { %>MfaRequiredError, <% } %>useAuth } from '@/lib/auth'
+} from '~/components/ui/card'
+<% if (it.auth.password || it.auth.otp) { %>import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
+<% } %>import { <% if (it.auth.mfa && it.auth.password) { %>MfaRequiredError, <% } %>useAuth } from '~/lib/auth'
 
 <% if (it.auth.password || it.auth.otp) { %>type View = <% if (it.auth.password) { %>'password'<% } %><% if (it.auth.password && it.auth.otp) { %> | <% } %><% if (it.auth.otp) { %>'otp-email' | 'otp-code'<% } %>
 
-<% } %>export function LoginPage() {
+<% } %>export default function Login() {
   const navigate = useNavigate()
   const auth = useAuth()
 <% if (it.auth.password || it.auth.otp) { %>  const [view<% if (it.auth.otp) { %>, setView<% } %>] = useState<View>(<% if (it.auth.password) { %>'password'<% } else { %>'otp-email'<% } %>)

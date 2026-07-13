@@ -1,0 +1,6 @@
+{
+  "name": "auth-react-router",
+  "conditions": {
+    "app/routes/register.tsx": "auth.password"
+  }
+}
