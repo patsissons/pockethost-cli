@@ -203,7 +203,8 @@ export async function fillAnswers(
   let customDomain = partial.customDomain
   if (customDomain !== undefined) {
     const domainError = validateCustomDomain(customDomain)
-    if (domainError) throw new Error(`Invalid --domain "${customDomain}": ${domainError}`)
+    if (domainError)
+      throw new Error(`Invalid --domain "${customDomain}": ${domainError}`)
   } else if (interactive) {
     const input = accept(
       await clack.text({

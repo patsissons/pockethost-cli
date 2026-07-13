@@ -212,6 +212,7 @@ export function commitGroupFor(
 ): CommitGroupKey {
   if (target === '.gitignore') return 'gitignore'
   if (layerKind === 'auth') return 'auth'
+  if (target.startsWith('.github/')) return 'tooling'
 
   if (
     target === 'README.md' ||

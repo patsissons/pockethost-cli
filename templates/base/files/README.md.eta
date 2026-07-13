@@ -61,6 +61,10 @@ PB_TYPEGEN_URL=<%= it.pocketbaseUrl %> PB_TYPEGEN_EMAIL=<admin-email> PB_TYPEGEN
 
 The admin account is your pockethost.io login (PocketHost Admin Sync provisions it automatically).
 
+## CI
+
+`.github/workflows/ci.yml` runs `<%= it.pm.run %> validate` on every push and pull request<% if (it.instanceName) { %>, and deploys to PocketHost on pushes to `main`. Add `PHIO_USERNAME` and `PHIO_PASSWORD` as repository secrets to enable the deploy job<% } %>.
+
 ## Scripts
 
 | Script                              | What it does                                          |

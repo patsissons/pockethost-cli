@@ -3,6 +3,7 @@
 exports[`scaffold integration (nextjs) > ssr mode: no export config, no copy script, ssr docs 1`] = `
 [
   ".env.example",
+  ".github/workflows/ci.yml",
   ".gitignore",
   ".prettierignore",
   ".prettierrc",
@@ -47,6 +48,7 @@ exports[`scaffold integration (nextjs) > ssr mode: no export config, no copy scr
 exports[`scaffold integration (nextjs) > static mode: expected tree, export config, and pb_public copy script 1`] = `
 [
   ".env.example",
+  ".github/workflows/ci.yml",
   ".gitignore",
   ".prettierignore",
   ".prettierrc",
@@ -92,6 +94,7 @@ exports[`scaffold integration (nextjs) > static mode: expected tree, export conf
 exports[`scaffold integration (react-router) > produces the expected file tree with password auth 1`] = `
 [
   ".env.example",
+  ".github/workflows/ci.yml",
   ".gitignore",
   ".prettierignore",
   ".prettierrc",
@@ -136,6 +139,7 @@ exports[`scaffold integration (react-router) > produces the expected file tree w
 exports[`scaffold integration (sveltekit) > produces the expected file tree with password auth 1`] = `
 [
   ".env.example",
+  ".github/workflows/ci.yml",
   ".gitignore",
   ".prettierignore",
   ".prettierrc",
@@ -184,6 +188,7 @@ exports[`scaffold integration (sveltekit) > produces the expected file tree with
 exports[`scaffold integration (vite-react) > produces the expected file tree with password auth 1`] = `
 [
   ".env.example",
+  ".github/workflows/ci.yml",
   ".gitignore",
   ".prettierignore",
   ".prettierrc",

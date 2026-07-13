@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+<% if (it.pm.name === 'pnpm') { %>      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+<% } else if (it.pm.name === 'bun') { %>      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+<% } else { %>      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+<% } %>      - run: <%= it.pm.exec %> playwright install --with-deps chromium
+      - run: <%= it.pm.run %> validate
+<% if (it.instanceName) { %>
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+<% if (it.pm.name === 'pnpm') { %>      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+<% } else if (it.pm.name === 'bun') { %>      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+<% } else { %>      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+<% } %>      - run: <%= it.pm.run %> build
+      - run: npm install -g phio
+      - run: phio deploy -v
+        env:
+          PHIO_USERNAME: ${{ secrets.PHIO_USERNAME }}
+          PHIO_PASSWORD: ${{ secrets.PHIO_PASSWORD }}
+<% } else { %># A deploy job can be added once an instance is linked (phio link <name>):
+# see the README's Deployment section — it needs PHIO_USERNAME/PHIO_PASSWORD
+# repository secrets and runs `<%= it.pm.run %> build && phio deploy`.
+<% } %>

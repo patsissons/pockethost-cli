@@ -30,7 +30,10 @@ export function hasFailure(checks: CheckResult[]): boolean {
   return checks.some((c) => c.status === 'fail')
 }
 
-async function version(command: string, args: string[] = ['--version']): Promise<string | null> {
+async function version(
+  command: string,
+  args: string[] = ['--version'],
+): Promise<string | null> {
   try {
     const { stdout } = await execa(command, args)
     return stdout.split('\n')[0]?.trim() ?? null
@@ -47,15 +50,27 @@ export async function runChecks(): Promise<CheckResult[]> {
     semver.satisfies(node, '>=24')
       ? { name: 'node', status: 'ok', detail: `${node} (phio-compatible)` }
       : semver.satisfies(node, '>=20')
-        ? { name: 'node', status: 'warn', detail: `${node} — scaffolding works, but phio needs >=24` }
-        : { name: 'node', status: 'fail', detail: `${node} — ph requires Node >=20` },
+        ? {
+            name: 'node',
+            status: 'warn',
+            detail: `${node} — scaffolding works, but phio needs >=24`,
+          }
+        : {
+            name: 'node',
+            status: 'fail',
+            detail: `${node} — ph requires Node >=20`,
+          },
   )
 
   const git = await version('git')
   checks.push(
     git
       ? { name: 'git', status: 'ok', detail: git }
-      : { name: 'git', status: 'fail', detail: 'not found — scaffolds cannot be committed' },
+      : {
+          name: 'git',
+          status: 'fail',
+          detail: 'not found — scaffolds cannot be committed',
+        },
   )
 
   for (const pm of ['pnpm', 'bun', 'npm'] as const) {
@@ -69,9 +84,17 @@ export async function runChecks(): Promise<CheckResult[]> {
 
   try {
     templatesRoot()
-    checks.push({ name: 'templates', status: 'ok', detail: 'bundled templates located' })
+    checks.push({
+      name: 'templates',
+      status: 'ok',
+      detail: 'bundled templates located',
+    })
   } catch {
-    checks.push({ name: 'templates', status: 'fail', detail: 'missing — broken installation' })
+    checks.push({
+      name: 'templates',
+      status: 'fail',
+      detail: 'missing — broken installation',
+    })
   }
 
   const phioVersion = await version('phio')
@@ -82,7 +105,8 @@ export async function runChecks(): Promise<CheckResult[]> {
       : {
           name: 'phio',
           status: 'warn',
-          detail: 'not on PATH — will fall back to dlx (or: npm install -g phio)',
+          detail:
+            'not on PATH — will fall back to dlx (or: npm install -g phio)',
         },
   )
 
@@ -91,10 +115,18 @@ export async function runChecks(): Promise<CheckResult[]> {
     checks.push(
       loggedIn
         ? { name: 'pockethost', status: 'ok', detail: 'logged in' }
-        : { name: 'pockethost', status: 'warn', detail: 'not logged in — run `phio login`' },
+        : {
+            name: 'pockethost',
+            status: 'warn',
+            detail: 'not logged in — run `phio login`',
+          },
     )
   } catch {
-    checks.push({ name: 'pockethost', status: 'warn', detail: 'could not check login state' })
+    checks.push({
+      name: 'pockethost',
+      status: 'warn',
+      detail: 'could not check login state',
+    })
   }
 
   return checks

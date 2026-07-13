@@ -1,5 +1,9 @@
 {
   "name": "base",
+  "mounts": {
+    "files": ".",
+    "github": ".github"
+  },
   "packageJson": {
     "scripts": {
       "test": "vitest run",

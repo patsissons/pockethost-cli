@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { formatChecks, hasFailure, type CheckResult } from '../../src/commands/doctor.js'
+import {
+  formatChecks,
+  hasFailure,
+  type CheckResult,
+} from '../../src/commands/doctor.js'
 
 const checks: CheckResult[] = [
   { name: 'node', status: 'ok', detail: 'v25.0.0' },
