@@ -1,0 +1,33 @@
+<script lang="ts">
+  import '../app.css'
+<% if (it.auth.enabled) { %>  import Button from '$lib/components/ui/button.svelte'
+  import { auth } from '$lib/auth.svelte'
+<% } %>
+  let { children } = $props()
+</script>
+
+<div class="bg-background text-foreground flex min-h-screen flex-col">
+  <header class="border-b">
+    <div
+      class="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4"
+    >
+      <a href="/" class="font-semibold"><%= it.appName %></a>
+<% if (it.auth.enabled) { %>      <nav class="flex items-center gap-2">
+        {#if auth.user}
+          <span class="text-muted-foreground text-sm">{auth.user.email}</span>
+          <Button variant="outline" size="sm" onclick={() => auth.logout()}>
+            Log out
+          </Button>
+        {:else}
+          <Button size="sm" href="/login">Log in</Button>
+        {/if}
+      </nav>
+<% } %>    </div>
+  </header>
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+    {@render children()}
+  </main>
+  <footer class="text-muted-foreground border-t py-4 text-center text-sm">
+    Powered by PocketHost
+  </footer>
+</div>

@@ -1,0 +1,75 @@
+<script lang="ts">
+  import Card from '$lib/components/ui/card.svelte'
+  import CardContent from '$lib/components/ui/card-content.svelte'
+  import CardDescription from '$lib/components/ui/card-description.svelte'
+  import CardHeader from '$lib/components/ui/card-header.svelte'
+  import CardTitle from '$lib/components/ui/card-title.svelte'
+  import { logger } from '$lib/logger'
+  import { pb } from '$lib/pocketbase'
+  import type { PostsRecord } from '$lib/pocketbase-types'
+
+  type PostsState =
+    | { status: 'loading' }
+    | { status: 'error'; message: string }
+    | { status: 'ready'; posts: PostsRecord[] }
+
+  let postsState = $state<PostsState>({ status: 'loading' })
+
+  $effect(() => {
+    let cancelled = false
+    pb.collection('posts')
+      .getFullList<PostsRecord>({ sort: '-created' })
+      .then((posts) => {
+        if (!cancelled) postsState = { status: 'ready', posts }
+      })
+      .catch((error: unknown) => {
+        logger.error('failed to load posts', error)
+        if (!cancelled) {
+          postsState = {
+            status: 'error',
+            message:
+              'Could not reach PocketBase. Check VITE_POCKETBASE_URL in your .env.',
+          }
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  })
+</script>
+
+<div class="space-y-6">
+  <div>
+    <h1 class="text-3xl font-bold tracking-tight"><%= it.appName %></h1>
+    <p class="text-muted-foreground mt-1">
+      Your PocketHost-backed app shell is running. Start building!
+    </p>
+  </div>
+
+  {#if postsState.status === 'loading'}
+    <p class="text-muted-foreground">Loading posts…</p>
+  {:else if postsState.status === 'error'}
+    <Card>
+      <CardHeader>
+        <CardTitle>Backend unreachable</CardTitle>
+        <CardDescription>{postsState.message}</CardDescription>
+      </CardHeader>
+    </Card>
+  {:else}
+    <div class="grid gap-4 sm:grid-cols-2">
+      {#each postsState.posts as post (post.id)}
+        <Card>
+          <CardHeader>
+            <CardTitle>{post.title}</CardTitle>
+            <CardDescription>
+              {new Date(post.created).toLocaleDateString()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p class="text-sm">{post.body}</p>
+          </CardContent>
+        </Card>
+      {/each}
+    </div>
+  {/if}
+</div>

@@ -1,0 +1,33 @@
+// svelte-check only sees files under src/, so load the jest-dom matcher
+// type augmentation here rather than relying on vitest.setup.ts.
+import '@testing-library/jest-dom/vitest'
+import { render, screen } from '@testing-library/svelte'
+import { describe, expect, it, vi } from 'vitest'
+import Page from './+page.svelte'
+
+vi.mock('$lib/pocketbase', () => ({
+  pb: {
+    collection: () => ({
+      getFullList: () =>
+        Promise.resolve([
+          {
+            id: 'r1',
+            title: 'Hello from PocketBase',
+            body: 'Test post',
+            created: '2024-01-01 00:00:00Z',
+            updated: '2024-01-01 00:00:00Z',
+          },
+        ]),
+    }),
+  },
+}))
+
+describe('home page', () => {
+  it('renders the app name and posts from PocketBase', async () => {
+    render(Page)
+    expect(
+      screen.getByRole('heading', { name: '<%= it.appName %>' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByText('Hello from PocketBase')).toBeInTheDocument()
+  })
+})
