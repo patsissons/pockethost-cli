@@ -1,0 +1,31 @@
+# Tier 3: scaffold each framework with the real CLI, install its deps, and
+# run the scaffolded app's own validate:quick. This is the drift detector for
+# the pinned template dependencies.
+name: Smoke
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [vite-react, sveltekit, react-router, nextjs]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # create runs install + the scaffolded app's validate:quick
+      - run: >
+          pnpm dev create "$RUNNER_TEMP/smoke-app" --name smoke-app --yes
+          --skip-phio --no-deploy --framework ${{ matrix.framework }}

@@ -1,0 +1,34 @@
+# Tier 4: full framework × design matrix with full auth, including the
+# scaffolded app's Playwright e2e suite.
+name: Deep smoke
+
+on:
+  schedule:
+    - cron: '23 10 * * 0'
+  workflow_dispatch:
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [vite-react, sveltekit, react-router, nextjs]
+        design: [shadcn, daisyui, tailwind]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: >
+          pnpm dev create "$RUNNER_TEMP/deep-app" --name deep-app --yes
+          --skip-phio --no-deploy --framework ${{ matrix.framework }}
+          --design ${{ matrix.design }} --auth password,otp --oauth google
+          --mfa
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: ${{ runner.temp }}/deep-app
+      - run: pnpm test:e2e
+        working-directory: ${{ runner.temp }}/deep-app
