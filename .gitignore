@@ -6,3 +6,7 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# phio artifacts (from misdirected local runs)
+.phioconfig
+.ftp-deploy-sync-state.json
