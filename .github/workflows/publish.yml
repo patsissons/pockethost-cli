@@ -1,0 +1,43 @@
+# Publishes to npm when a GitHub release is published (drafts don't trigger).
+# Requires the NPM_TOKEN repository secret (npm token with publish rights).
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  # npm provenance attestation
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      # integration tests scaffold real repos and need a git identity
+      - run: |
+          git config --global user.name "release-bot"
+          git config --global user.email "release-bot@users.noreply.github.com"
+      - name: Check release tag matches package.json version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "Release tag v$tag does not match package.json version $pkg." >&2
+            echo "Bump package.json (which drafts the release) instead of tagging by hand." >&2
+            exit 1
+          fi
+      - run: pnpm validate
+      # prepublishOnly re-runs build + validate:quick as a final gate
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

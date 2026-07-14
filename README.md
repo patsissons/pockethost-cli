@@ -97,6 +97,13 @@ pnpm dev create /tmp/demo --yes --skip-phio   # run the CLI from source
 
 CI tiers: unit+integration on every push; a nightly smoke matrix scaffolds every framework and runs the scaffolded app's own validation; a weekly deep-smoke runs the full framework × design matrix including Playwright e2e. `tests/integration/pack.test.ts` guards the npm artifact (templates ship complete, dotfiles stored `_`-escaped).
 
+### Releasing
+
+1. Bump `version` in package.json and push to main — the **Draft release** workflow creates a draft GitHub release `v<version>` with generated notes.
+2. Review and publish the release — the **Publish** workflow checks the tag matches package.json, runs the full validation suite, and publishes to npm with provenance.
+
+Requires the `NPM_TOKEN` repository secret (an npm token with publish rights for `pockethost-cli`).
+
 ## Architecture (short version)
 
 Templates are embedded layers composed in order `base → frameworks/<fw> → design/<ds>/<fw> → features/auth/<fw>`, each with a `layer.json` manifest (package.json fragment, mounts, conditions, overrides). `src/core/plan.ts` is a pure `answers → plan` function; `src/core/engine.ts` renders (eta), formats (prettier, in-memory), writes, and commits. All phio subprocess use goes through `src/phio/client.ts`. See AGENTS.md for working rules.
