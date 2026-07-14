@@ -101,6 +101,10 @@ pnpm dev create /tmp/demo --yes --skip-phio   # run the CLI from source
 
 CI tiers: unit+integration on every push; a nightly smoke matrix scaffolds every framework and runs the scaffolded app's own validation; a weekly deep-smoke runs the full framework × design matrix including Playwright e2e. `tests/integration/pack.test.ts` guards the npm artifact (templates ship complete, dotfiles stored `_`-escaped).
 
+### Live verification (optional, manual)
+
+Nothing automated ever touches a real PocketHost instance — every CI tier and test runs with `--skip-phio`, because instances are paid. The full deploy path (`phio login` → `ph create --instance <name>` → verify the live URL, `/api/ping`, posts records, and auth-methods config) is a manual, optional check against a disposable instance, worth doing before releases that change `src/phio/` or `src/steps/deploy.ts`.
+
 ### Releasing
 
 1. Bump `version` in package.json and push to main — the **Draft release** workflow creates a draft GitHub release `v<version>` with generated notes.
