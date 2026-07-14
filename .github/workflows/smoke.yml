@@ -25,6 +25,10 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # runners have no git identity; the scaffolder's modular commits need one
+      - run: |
+          git config --global user.name "smoke-bot"
+          git config --global user.email "smoke-bot@users.noreply.github.com"
       # create runs install + the scaffolded app's validate:quick
       - run: >
           pnpm dev create "$RUNNER_TEMP/smoke-app" --name smoke-app --yes

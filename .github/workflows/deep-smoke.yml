@@ -23,6 +23,10 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # runners have no git identity; the scaffolder's modular commits need one
+      - run: |
+          git config --global user.name "smoke-bot"
+          git config --global user.email "smoke-bot@users.noreply.github.com"
       - run: >
           pnpm dev create "$RUNNER_TEMP/deep-app" --name deep-app --yes
           --skip-phio --no-deploy --framework ${{ matrix.framework }}
