@@ -139,6 +139,36 @@ describe('scaffold integration (vite-react)', () => {
     }
   })
 
+  it('hooks never register routes PocketBase already owns (boot panic)', async () => {
+    const { targetDir, result } = await scaffold({
+      authFactors: ['password', 'otp'],
+      oauthProviders: ['google'],
+      mfa: true,
+    })
+    // duplicate route patterns panic the server at startup — a crash-looping
+    // container was how we learned /api/health is built in
+    const reserved = [
+      '/api/health',
+      '/api/collections',
+      '/api/settings',
+      '/api/logs',
+      '/_/',
+    ]
+    for (const { target } of result.files.filter((f) =>
+      f.target.startsWith('pb_hooks/'),
+    )) {
+      const source = await readFile(path.join(targetDir, target), 'utf8')
+      const registrations = source.match(/routerAdd\([^)]*\)/g) ?? []
+      for (const registration of registrations) {
+        for (const route of reserved) {
+          expect
+            .soft(registration, `${target} registers reserved route ${route}`)
+            .not.toContain(`'${route}'`)
+        }
+      }
+    }
+  })
+
   it('generated migrations and hooks are valid javascript', async () => {
     const { targetDir } = await scaffold()
     for (const file of [
