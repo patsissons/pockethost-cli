@@ -1,6 +1,9 @@
 # pockethost-cli
 
-A TypeScript CLI (`ph`) that scaffolds deploy-ready [PocketHost](https://pockethost.io/)-backed web apps with a single interactive wizard.
+[![npm version](https://img.shields.io/npm/v/pockethost-cli)](https://www.npmjs.com/package/pockethost-cli)
+[![CI](https://github.com/patsissons/pockethost-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/patsissons/pockethost-cli/actions/workflows/ci.yml)
+
+A TypeScript CLI (`ph`) that scaffolds deploy-ready [PocketHost](https://pockethost.io/)-backed web apps with a single interactive wizard. Published on npm as [`pockethost-cli`](https://www.npmjs.com/package/pockethost-cli).
 
 `ph create` walks you through app name, framework, design system, auth methods, package manager, PocketHost instance, and custom domain — then scaffolds a batteries-included web app shell, installs and validates it, and deploys it to `https://<instance>.pockethost.io` via [phio](https://pockethost.io/docs/phio).
 
