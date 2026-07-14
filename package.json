@@ -30,6 +30,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsdown",
+    "prepare": "tsdown",
     "prepublishOnly": "pnpm build && pnpm validate:quick",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -21,9 +21,13 @@ interface PackFile {
 describe('npm pack', () => {
   it('includes dist, templates, and underscore-escaped dotfiles', async () => {
     await execa('pnpm', ['build'], { cwd: repoRoot })
-    const { stdout } = await execa('npm', ['pack', '--dry-run', '--json'], {
-      cwd: repoRoot,
-    })
+    // --ignore-scripts: the prepare script would re-run tsdown and pollute
+    // the JSON output; the build above already produced dist/
+    const { stdout } = await execa(
+      'npm',
+      ['pack', '--dry-run', '--json', '--ignore-scripts'],
+      { cwd: repoRoot },
+    )
     const [info] = JSON.parse(stdout) as Array<{ files: PackFile[] }>
     const files = info!.files.map((f) => f.path)
 
