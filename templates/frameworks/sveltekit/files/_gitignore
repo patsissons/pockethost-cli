@@ -23,3 +23,6 @@ test-results/
 # misc
 *.log
 .DS_Store
+
+# typescript incremental build info
+*.tsbuildinfo
