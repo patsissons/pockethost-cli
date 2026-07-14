@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# generated (svelte-kit sync / build)
+.svelte-kit/
+
+# build output (deployed via phio, never committed)
+pb_public/
+
+# local pocketbase data
+pb_data/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# misc
+*.log
+.DS_Store

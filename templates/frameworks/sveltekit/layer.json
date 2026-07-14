@@ -1,6 +1,10 @@
 {
   "name": "sveltekit",
-  "overrides": [".prettierrc", ".prettierignore"],
+  "overrides": [
+    ".gitignore",
+    ".prettierrc",
+    ".prettierignore"
+  ],
   "packageJson": {
     "scripts": {
       "dev": "vite dev",

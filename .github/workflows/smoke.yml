@@ -29,3 +29,12 @@ jobs:
       - run: >
           pnpm dev create "$RUNNER_TEMP/smoke-app" --name smoke-app --yes
           --skip-phio --no-deploy --framework ${{ matrix.framework }}
+      # validate must not mutate the scaffold (e.g. a typegen that edits
+      # package.json) — a dirty tree here means a template is incomplete
+      - run: |
+          if [ -n "$(git -C "$RUNNER_TEMP/smoke-app" status --porcelain)" ]; then
+            echo "scaffolded app tree is dirty after validate:" >&2
+            git -C "$RUNNER_TEMP/smoke-app" status --porcelain >&2
+            git -C "$RUNNER_TEMP/smoke-app" diff >&2
+            exit 1
+          fi

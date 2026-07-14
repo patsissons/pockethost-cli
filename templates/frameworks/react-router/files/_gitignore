@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# generated (react-router typegen / build)
+.react-router/
+build/
+
+# build output (deployed via phio, never committed)
+pb_public/
+
+# local pocketbase data
+pb_data/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# misc
+*.log
+.DS_Store

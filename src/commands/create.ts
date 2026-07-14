@@ -92,7 +92,8 @@ export function createCommand(): Command {
     // --- install + validate ------------------------------------------------
     if (answers.install) {
       clack.log.step(`Installing dependencies with ${answers.packageManager}…`)
-      await installDependencies(answers)
+      const installWarnings = await installDependencies(answers)
+      for (const warning of installWarnings) clack.log.warn(warning)
     } else {
       clack.log.info('Skipped dependency installation (--no-install).')
     }
