@@ -14,16 +14,33 @@ import { ANSWER_DEFAULTS, type PartialAnswers } from './flags.js'
 import { validateAppName, validateCustomDomain } from './validate.js'
 
 const FRAMEWORK_LABELS: Record<(typeof FRAMEWORKS)[number], string> = {
-  'vite-react': 'React (Vite SPA)',
+  'vite-react': 'React (Vite SPA) — recommended',
   sveltekit: 'SvelteKit (static adapter)',
   'react-router': 'React Router 7 (SPA mode)',
   nextjs: 'Next.js',
 }
 
+const FRAMEWORK_HINTS: Record<(typeof FRAMEWORKS)[number], string> = {
+  'vite-react':
+    'the default — simplest setup, fastest builds; pick this unless you have a reason not to',
+  sveltekit: 'pick if you prefer Svelte or want the smallest bundles',
+  'react-router':
+    'pick for file-route conventions and typed routes while staying React',
+  nextjs:
+    'pick only if your team is Next-native or you need SSR (SSR needs external hosting)',
+}
+
 const DESIGN_LABELS: Record<(typeof DESIGN_SYSTEMS)[number], string> = {
-  shadcn: 'shadcn/ui',
+  shadcn: 'shadcn/ui — recommended',
   daisyui: 'daisyUI',
   tailwind: 'Tailwind only',
+}
+
+const DESIGN_HINTS: Record<(typeof DESIGN_SYSTEMS)[number], string> = {
+  shadcn: 'you own the component code; best ecosystem and AI-iteration story',
+  daisyui:
+    'pick for quick prototypes — themed components from CSS classes alone',
+  tailwind: 'pick if you are bringing your own component library',
 }
 
 function bail(): never {
@@ -92,6 +109,7 @@ export async function fillAnswers(
             options: FRAMEWORKS.map((value) => ({
               value,
               label: FRAMEWORK_LABELS[value],
+              hint: FRAMEWORK_HINTS[value],
             })),
             initialValue: ANSWER_DEFAULTS.framework,
           }),
@@ -107,12 +125,13 @@ export async function fillAnswers(
             options: [
               {
                 value: NEXT_MODES[0],
-                label: 'Static export — deploys to PocketHost (pb_public)',
+                label: 'Static export — recommended',
+                hint: 'deploys straight to PocketHost; pick unless you truly need SSR',
               },
               {
                 value: NEXT_MODES[1],
-                label:
-                  'SSR — frontend on Vercel/Cloudflare, PocketHost as backend',
+                label: 'SSR — frontend on Vercel/Cloudflare',
+                hint: 'only for SSR/ISR/server components; PocketHost serves the backend only',
               },
             ],
             initialValue: 'static' as const,
@@ -130,6 +149,7 @@ export async function fillAnswers(
             options: DESIGN_SYSTEMS.map((value) => ({
               value,
               label: DESIGN_LABELS[value],
+              hint: DESIGN_HINTS[value],
             })),
             initialValue: ANSWER_DEFAULTS.design,
           }),
@@ -144,10 +164,15 @@ export async function fillAnswers(
             message:
               'Auth factors (space to toggle, enter to accept; none = no auth UI)',
             options: [
-              { value: AUTH_FACTORS[0], label: 'Email + password' },
+              {
+                value: AUTH_FACTORS[0],
+                label: 'Email + password — recommended',
+                hint: 'works out of the box; the right default for almost every app',
+              },
               {
                 value: AUTH_FACTORS[1],
-                label: 'Email OTP (one-time codes; needs SMTP)',
+                label: 'Email OTP (one-time codes)',
+                hint: 'add for passwordless login or MFA — requires SMTP on your instance',
               },
             ],
             initialValues: ANSWER_DEFAULTS.authFactors,
@@ -162,8 +187,15 @@ export async function fillAnswers(
       ? accept(
           await clack.multiselect({
             message:
-              'OAuth providers (each needs credentials from that provider)',
-            options: OAUTH_PROVIDERS.map((value) => ({ value, label: value })),
+              'OAuth providers (skip is fine — each needs credentials from that provider, added later as PocketHost secrets)',
+            options: OAUTH_PROVIDERS.map((value) => ({
+              value,
+              label: value,
+              hint:
+                value === 'google'
+                  ? 'the highest-coverage provider if you only pick one'
+                  : undefined,
+            })),
             required: false,
           }),
         )
@@ -182,7 +214,8 @@ export async function fillAnswers(
   ) {
     mfa = accept(
       await clack.confirm({
-        message: 'Require multi-factor auth (users must pass two methods)?',
+        message:
+          'Require multi-factor auth? (recommended only for sensitive data — users must pass two methods on every login)',
         initialValue: false,
       }),
     )
@@ -194,7 +227,23 @@ export async function fillAnswers(
       ? accept(
           await clack.select({
             message: 'Package manager',
-            options: PACKAGE_MANAGERS.map((value) => ({ value, label: value })),
+            options: [
+              {
+                value: PACKAGE_MANAGERS[0],
+                label: 'pnpm — recommended',
+                hint: 'fast, strict, and what the scaffolded CI is tuned for',
+              },
+              {
+                value: PACKAGE_MANAGERS[1],
+                label: 'bun',
+                hint: 'pick if your team already runs bun everywhere',
+              },
+              {
+                value: PACKAGE_MANAGERS[2],
+                label: 'npm',
+                hint: 'pick if you want zero extra tooling',
+              },
+            ],
             initialValue: ANSWER_DEFAULTS.packageManager,
           }),
         )
@@ -208,7 +257,8 @@ export async function fillAnswers(
   } else if (interactive) {
     const input = accept(
       await clack.text({
-        message: 'Custom domain (optional — press enter to skip)',
+        message:
+          'Custom domain (optional — skipping is recommended until you go to production; you can add one in the PocketHost dashboard any time)',
         placeholder: 'app.example.com',
         defaultValue: '',
         validate: (value) => (value ? validateCustomDomain(value) : undefined),
