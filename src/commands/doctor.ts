@@ -106,7 +106,7 @@ export async function runChecks(): Promise<CheckResult[]> {
           name: 'phio',
           status: 'warn',
           detail:
-            'not on PATH — will fall back to dlx (or: npm install -g phio)',
+            'not on PATH — will fall back to dlx (or: npm install -g phio tsx)',
         },
   )
 

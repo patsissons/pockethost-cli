@@ -52,7 +52,7 @@ jobs:
           cache: npm
       - run: npm ci
 <% } %>      - run: <%= it.pm.run %> build
-      - run: npm install -g phio
+      - run: npm install -g phio tsx
       - run: phio deploy -v
         env:
           PHIO_USERNAME: ${{ secrets.PHIO_USERNAME }}

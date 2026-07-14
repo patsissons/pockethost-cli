@@ -127,7 +127,12 @@ const NOISE_WORDS = new Set([
 export function parseInstanceList(stdout: string): string[] {
   const names = new Set<string>()
   for (const line of stdout.split('\n')) {
-    const cleaned = line.replace(ANSI_PATTERN, '').replace(/[│|┃]/g, ' ').trim()
+    const cleaned = line
+      .replace(ANSI_PATTERN, '')
+      .replace(/[│|┃]/g, ' ')
+      .trim()
+      // phio 0.4 prints instances as `- name (id)  (STATUS)` bullets
+      .replace(/^[-*•]\s+/, '')
     const first = cleaned.split(/\s+/)[0]
     if (!first || NOISE_WORDS.has(first.toLowerCase())) continue
     if (INSTANCE_NAME_PATTERN.test(first)) names.add(first)

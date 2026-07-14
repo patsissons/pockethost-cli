@@ -15,7 +15,7 @@ cp .env.example .env
 Backend syncing/deployment uses the [phio CLI](https://pockethost.io/docs/phio) (requires Node 24+):
 
 ```sh
-npm install -g phio
+npm install -g phio tsx
 phio login
 ```
 

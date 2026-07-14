@@ -6,6 +6,21 @@ import {
 } from '../../src/phio/client.js'
 
 describe('parseInstanceList', () => {
+  it('parses real phio 0.4 output (bulleted `- name (id)  (STATUS)`)', () => {
+    const output = [
+      '- fwd (y71akheycthycll)  (IDLE)',
+      '- myregulars (ykcnfqcfpf3uwp4)  (IDLE)',
+      '- webauthn-aa (jcb9xpwq0cfy9q2)  (IDLE)',
+      '- webauthn-rp (na57cx4lu62t9gc)  (IDLE)',
+    ].join('\n')
+    expect(parseInstanceList(output)).toEqual([
+      'fwd',
+      'myregulars',
+      'webauthn-aa',
+      'webauthn-rp',
+    ])
+  })
+
   it('extracts names from a plain list', () => {
     expect(parseInstanceList('my-app\nother-instance\n')).toEqual([
       'my-app',

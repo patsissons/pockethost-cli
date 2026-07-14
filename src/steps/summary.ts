@@ -39,7 +39,7 @@ export function buildSummary({
     lines.push('No instance linked yet. When ready:')
     lines.push(`  1. Create one at https://pockethost.io/instances/new`)
     lines.push(
-      `  2. phio link <instance-name>   (npm install -g phio if missing)`,
+      `  2. phio link <instance-name>   (npm install -g phio tsx if missing)`,
     )
     lines.push(`  3. ${pm.run} build && phio deploy`)
   }
