@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { execa } from 'execa'
@@ -55,11 +56,15 @@ export async function linkAndDeploy(
   answers: WizardAnswers & { instanceName: string },
 ): Promise<string[]> {
   await client.link(answers.instanceName, answers.targetDir)
-  const warnings = await commitFiles(
-    `chore: link pockethost instance ${answers.instanceName}`,
-    ['.phioconfig'],
-    { cwd: answers.targetDir },
-  )
+  // phio >=0.4 records links globally; commit .phioconfig only when a
+  // project file was actually written (older phio versions).
+  const warnings = existsSync(path.join(answers.targetDir, '.phioconfig'))
+    ? await commitFiles(
+        `chore: link pockethost instance ${answers.instanceName}`,
+        ['.phioconfig'],
+        { cwd: answers.targetDir },
+      )
+    : []
   await client.deploy(answers.targetDir)
   return warnings
 }

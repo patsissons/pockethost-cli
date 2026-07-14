@@ -3,6 +3,7 @@ import {
   dlxRunner,
   directRunner,
   parseInstanceList,
+  phioEnv,
 } from '../../src/phio/client.js'
 
 describe('parseInstanceList', () => {
@@ -43,6 +44,13 @@ describe('parseInstanceList', () => {
 
   it('returns empty for no instances', () => {
     expect(parseInstanceList('No instances found.\n')).toEqual([])
+  })
+})
+
+describe('phioEnv', () => {
+  it('pins PHIO_PROJECT_DIR so package-manager INIT_CWD cannot redirect phio', () => {
+    expect(phioEnv('/apps/demo')).toEqual({ PHIO_PROJECT_DIR: '/apps/demo' })
+    expect(phioEnv(undefined)).toBeUndefined()
   })
 })
 

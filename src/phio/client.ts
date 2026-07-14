@@ -35,6 +35,16 @@ export async function resolveRunner(pm: PackageManager): Promise<PhioRunner> {
   }
 }
 
+/**
+ * phio resolves its project root as PHIO_PROJECT_DIR ?? INIT_CWD ?? cwd and
+ * chdirs there. Package managers set INIT_CWD to where THEY were invoked, so
+ * a spawn cwd alone gets silently overridden (phio would deploy the wrong
+ * directory). Always pin PHIO_PROJECT_DIR when targeting a project.
+ */
+export function phioEnv(cwd?: string): NodeJS.ProcessEnv | undefined {
+  return cwd ? { PHIO_PROJECT_DIR: cwd } : undefined
+}
+
 async function run(
   runner: PhioRunner,
   args: string[],
@@ -43,6 +53,7 @@ async function run(
   const [command, ...prefixArgs] = runner.prefix
   const result = await execa(command!, [...prefixArgs, ...args], {
     reject: false,
+    env: phioEnv(typeof options.cwd === 'string' ? options.cwd : undefined),
     ...options,
   })
   return { stdout: String(result.stdout ?? ''), exitCode: result.exitCode ?? 1 }
@@ -96,6 +107,7 @@ export function createPhioClient(runner: PhioRunner): PhioClient {
       const [command, ...prefixArgs] = runner.prefix
       const result = await execa(command!, [...prefixArgs, 'deploy'], {
         cwd,
+        env: phioEnv(cwd),
         stdio: 'inherit',
         reject: false,
       })

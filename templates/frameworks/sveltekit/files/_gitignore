@@ -26,3 +26,6 @@ test-results/
 
 # typescript incremental build info
 *.tsbuildinfo
+
+# phio deploy sync state
+.ftp-deploy-sync-state.json
