@@ -6,6 +6,14 @@ A TypeScript CLI (`ph`) that scaffolds deploy-ready [PocketHost](https://pocketh
 
 ## Usage
 
+Not yet published to npm — run it straight from GitHub (a `prepare` script builds the CLI on install):
+
+```sh
+npx github:patsissons/pockethost-cli create my-app
+```
+
+Once published to npm as `pockethost-cli`, this becomes:
+
 ```sh
 pnpm dlx pockethost-cli create my-app   # or: npx pockethost-cli create my-app
 ```
