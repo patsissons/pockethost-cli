@@ -1,6 +1,6 @@
 {
   "name": "pockethost-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scaffold deploy-ready PocketHost-backed web apps with a single wizard",
   "type": "module",
   "license": "MIT",
